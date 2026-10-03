@@ -8,13 +8,15 @@
 <style>
   :root { color-scheme: light; }
   body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #f4f6fb; color: #0b1220; font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; padding: 16px; box-sizing: border-box; }
-  .card { background: #fff; border-radius: 20px; box-shadow: 0 1px 2px rgba(16,24,40,.05), 0 10px 30px rgba(16,24,40,.08); padding: 28px; max-width: 440px; width: 100%; display: grid; gap: 12px; }
+  .card { background: #fff; border-radius: 20px; box-shadow: 0 1px 2px rgba(16,24,40,.05), 0 10px 30px rgba(16,24,40,.08); padding: 28px; max-width: 460px; width: 100%; display: grid; gap: 12px; }
   .logo { width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, #ff9f1c, #ff5f2e); display: grid; place-items: center; }
   h1 { font-size: 1.3rem; margin: 0; }
   p { margin: 0; color: #475467; }
-  .spin { width: 22px; height: 22px; border: 3px solid #eef1f7; border-top-color: #ff5f2e; border-radius: 50%; animation: s 0.8s linear infinite; }
+  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .spin { width: 22px; height: 22px; flex: none; border: 3px solid #eef1f7; border-top-color: #ff5f2e; border-radius: 50%; animation: s .8s linear infinite; }
   @keyframes s { to { transform: rotate(360deg); } }
-  a.btn { display: inline-block; background: #0b1220; color: #fff; text-decoration: none; padding: 10px 16px; border-radius: 10px; font-weight: 700; justify-self: start; }
+  a.btn { display: inline-block; background: #0b1220; color: #fff; text-decoration: none; padding: 10px 16px; border-radius: 10px; font-weight: 700; }
+  .note { background: #fff4de; color: #8a5a00; border-radius: 12px; padding: 10px 12px; font-size: .92rem; }
   .tiny { font-size: .8rem; color: #8a94a6; }
   @media (prefers-reduced-motion: reduce) { .spin { animation: none; } }
 </style>
@@ -23,24 +25,38 @@
 <div class="card">
   <div class="logo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 14h4l2-6 3 12 3-9 2 3h6"/></svg></div>
   <h1>Pothole Observer app download</h1>
-  <div id="state" style="display:flex;gap:10px;align-items:center"><div class="spin"></div><p>Finding the server's current address…</p></div>
-  <p class="tiny">The Pothole Observer server runs on a laptop for now, so its address can change. This permanent link always forwards to the current one.</p>
+  <div id="state" class="row"><div class="spin"></div><p>Checking that the server is online…</p></div>
+  <p class="tiny">The Pothole Observer server runs on a laptop for now, so its address can change. This permanent link always finds the current one.</p>
 </div>
 <script>
 (function () {
-  var TARGET = "setup";                       // "setup" (app download) or "" (ride data)
+  var TARGET = "setup";            // "setup" = app download page, "" = ride data
   var q = new URLSearchParams(location.search), key = q.get("key");
   var state = document.getElementById("state");
-  function fail(msg) { state.innerHTML = "<p>" + msg + "</p>"; }
+  function forward(url) {
+    var dest = url + "/" + TARGET + (key ? "?key=" + encodeURIComponent(key) : "");
+    state.innerHTML = '<a class="btn" href="' + dest.replace(/"/g, "&quot;") + '">Open the server</a><span class="tiny">Opening…</span>';
+    location.replace(dest);
+  }
+  function offline() {
+    if (TARGET === "") {
+      state.innerHTML = '<div class="note">The live server is offline right now (the laptop is switched off). Opening the latest saved map of all rides instead.</div><a class="btn" href="../#map">Open the saved map</a>';
+      setTimeout(function () { location.replace("../#map"); }, 3500);
+    } else {
+      state.innerHTML = '<div class="note">The server is offline right now (the laptop is switched off), so the app can’t be downloaded at this moment. Please try this same link again later; it works again as soon as the server is back.</div><a class="btn" href="../">See the project page</a>';
+    }
+  }
   fetch("../link.json?t=" + Date.now(), { cache: "no-store" })
     .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
     .then(function (j) {
       if (!j.url || !/^https:\/\/[a-z0-9-]+\.trycloudflare\.com$/.test(j.url)) throw new Error("bad link");
-      var dest = j.url + "/" + TARGET + (key ? "?key=" + encodeURIComponent(key) : "");
-      state.innerHTML = '<a class="btn" href="' + dest.replace(/"/g, "&quot;") + '">Open the server</a><span class="tiny">Opening automatically…</span>';
-      setTimeout(function () { location.replace(dest); }, 400);
+      var done = false, img = new Image();
+      var timer = setTimeout(function () { if (!done) { done = true; offline(); } }, 10000);
+      img.onload = function () { if (!done) { done = true; clearTimeout(timer); forward(j.url); } };
+      img.onerror = function () { if (!done) { done = true; clearTimeout(timer); offline(); } };
+      img.src = j.url + "/ping.svg?t=" + Date.now();
     })
-    .catch(function () { fail("Could not look up the server's address right now. Please try again in a minute."); });
+    .catch(offline);
 })();
 </script>
 </body>
