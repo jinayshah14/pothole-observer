@@ -40,21 +40,28 @@
   }
   function offline() {
     if (TARGET === "") {
-      state.innerHTML = '<div class="note">The live server is offline right now (the laptop is switched off). Opening the latest saved map of all rides instead.</div><a class="btn" href="../#map">Open the saved map</a>';
+      state.innerHTML = '<div class="note">The live server is offline right now. Opening the latest saved map of all rides instead.</div><a class="btn" href="../#map">Open the saved map</a>';
       setTimeout(function () { location.replace("../#map"); }, 3500);
     } else {
-      state.innerHTML = '<div class="note">The server is offline right now (the laptop is switched off), so the app can’t be downloaded at this moment. Please try this same link again later; it works again as soon as the server is back.</div><a class="btn" href="../">See the project page</a>';
+      state.innerHTML = '<div class="note">The server is offline right now, so the app can’t be downloaded at this moment. Please try this same link again later; it works again as soon as the server is back.</div><a class="btn" href="../">See the project page</a>';
     }
   }
   fetch("../link.json?t=" + Date.now(), { cache: "no-store" })
     .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
     .then(function (j) {
-      if (!j.url || !/^https:\/\/[a-z0-9-]+\.trycloudflare\.com$/.test(j.url)) throw new Error("bad link");
-      var done = false, img = new Image();
-      var timer = setTimeout(function () { if (!done) { done = true; offline(); } }, 10000);
-      img.onload = function () { if (!done) { done = true; clearTimeout(timer); forward(j.url); } };
-      img.onerror = function () { if (!done) { done = true; clearTimeout(timer); offline(); } };
-      img.src = j.url + "/ping.svg?t=" + Date.now();
+      if (!j.url || !/^https:\/\/[a-z0-9-]+\.(trycloudflare\.com|onrender\.com|duckdns\.org)$/.test(j.url)) throw new Error("bad link");
+      // A free cloud server sleeps when unused and takes about a minute to wake: keep trying for up to 100 s.
+      var t0 = Date.now(), done = false, budget = /onrender\.com$/.test(j.url) ? 100000 : 8000;  // only a cloud host sleeps
+      var slow = setTimeout(function () { if (!done) state.innerHTML = '<div class="spin"></div><p>Waking up the server\u2026 this takes about a minute after a quiet spell.</p>'; }, 3000);
+      (function attempt() {
+        var img = new Image();
+        img.onload = function () { if (!done) { done = true; clearTimeout(slow); forward(j.url); } };
+        img.onerror = function () {
+          if (done) return;
+          if (Date.now() - t0 < budget) setTimeout(attempt, 4000); else { done = true; clearTimeout(slow); offline(); }
+        };
+        img.src = j.url + "/ping.svg?t=" + Date.now();
+      })();
     })
     .catch(offline);
 })();
