@@ -486,6 +486,43 @@ canvas.seis { width: 100%; height: 76px; display: block; border-radius: 10px; ba
 .mini .ic svg { width: 22px; height: 22px; }
 .mini p { font-size: .84rem; color: var(--ink-2); margin-top: 4px; }
 .rail { margin-top: 18px; }
+/* every version: one at a time, newest first, sliding on every few seconds; a date rail of dots to jump anywhere */
+.vt { margin-top: 18px; display: grid; gap: 14px; }
+.vtHead { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.vtCtl { display: flex; align-items: center; gap: 8px; }
+.vtCtl .carBtn { width: 34px; height: 34px; font-size: 1.15rem; }
+#vtPlay svg { display: block; }
+.vtRail { display: flex; gap: 18px; overflow-x: auto; scrollbar-width: none; padding: 2px 2px 4px; }
+.vtRail::-webkit-scrollbar { display: none; }
+.vtDay { flex: none; display: grid; gap: 7px; }
+.vtDay > span { font: 700 .68rem var(--font-body); text-transform: uppercase; letter-spacing: .08em; color: var(--brand-2); }
+.vtDots { position: relative; display: flex; gap: 8px; align-items: center; padding: 0 2px; }
+.vtDots::before { content: ""; position: absolute; left: 6px; right: 6px; top: 50%; height: 2px; background: var(--line); transform: translateY(-50%); }
+.vtDot { position: relative; width: 12px; height: 12px; padding: 0; border-radius: 50%; border: 2px solid #c7cfdb; background: #fff;
+  cursor: pointer; transition: transform .25s, background .25s, border-color .25s; }
+.vtDot.hl { border-color: var(--brand); }
+.vtDot:hover { transform: scale(1.25); }
+.vtDot.on { background: var(--brand); border-color: var(--brand); transform: scale(1.45); box-shadow: 0 0 0 4px rgba(255, 106, 0, .16); }
+.vtDot.seen { background: #ffd9bf; border-color: #ffb37f; }
+.vtStage { position: relative; }
+.vtCard { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 16px; align-items: center; padding: 16px 18px;
+  border-radius: 16px; background: linear-gradient(160deg, #fffaf5, #f6f8fc); min-height: 96px;
+  transition: opacity .35s ease, transform .35s ease; }
+.vtCard.out { opacity: 0; transform: translateX(-16px); }
+.vtCard .vv { grid-row: span 2; font: 800 1.35rem var(--font-mono); color: #fff; padding: 10px 14px; border-radius: 14px;
+  background: linear-gradient(135deg, var(--brand), var(--brand-2)); align-self: start; }
+.vtCard .vv.plain { background: var(--ink); }
+.vtCard .vt1 { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.vtCard .vt1 b { font-size: 1.02rem; }
+.vtCard .vt1 em { font: 700 .66rem var(--font-body); font-style: normal; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--brand-2); background: #fff; border-radius: 999px; padding: 2px 8px; box-shadow: 0 0 0 1px var(--line); }
+.vtCard p { margin: 0; color: var(--ink-2); font-size: .88rem; line-height: 1.5; }
+.vtBar { height: 3px; border-radius: 3px; background: var(--line); overflow: hidden; margin-top: 8px; }
+.vtBar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--brand), var(--brand-2)); }
+.vtBar i.run { animation: vtfill linear forwards; }
+@keyframes vtfill { from { width: 0; } to { width: 100%; } }
+@media (max-width: 560px) { .vtCard { grid-template-columns: minmax(0, 1fr); } .vtCard .vv { grid-row: auto; justify-self: start; font-size: 1.1rem; padding: 6px 10px; } }
+@media (prefers-reduced-motion: reduce) { .vtCard { transition: none; } .vtCard.out { transform: none; } }
 .rail .cols { columns: 2 330px; column-gap: 30px; margin-top: 6px; }
 .rel { break-inside: avoid; display: grid; grid-template-columns: 70px minmax(0, 1fr); gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--line); font-size: .86rem; line-height: 1.45; }
 .rel .v { font: 700 .72rem var(--font-mono); color: var(--ink); background: var(--soft); border-radius: 8px; padding: 3px 0; text-align: center; align-self: start; }
@@ -693,7 +730,15 @@ canvas.seis { width: 100%; height: 76px; display: block; border-radius: 10px; ba
       </article>
     </div>
     <div class="grid3 also" id="also"></div>
-    <div class="card rail"><h3>Every version since 0.1.7</h3><div class="cols" id="rail"></div></div>
+    <div class="card vt" id="vt" aria-roledescription="carousel" aria-label="Every version since 0.1.7">
+      <div class="vtHead"><h3>Every version since 0.1.7</h3>
+        <div class="vtCtl"><span class="tiny mono" id="vtCount"></span>
+          <button class="carBtn" id="vtPrev" aria-label="Newer version">&#8249;</button>
+          <button class="carBtn" id="vtPlay" aria-label="Pause"></button>
+          <button class="carBtn" id="vtNext" aria-label="Older version">&#8250;</button></div></div>
+      <div class="vtRail" id="vtRail"></div>
+      <div class="vtStage"><div class="vtCard" id="vtCard" aria-live="polite"></div><div class="vtBar"><i id="vtProg"></i></div></div>
+    </div>
   </section>
 
   <section id="ride">
@@ -1054,8 +1099,56 @@ const REL = [['7 Oct'],
   ['0.1.15', 'Google-Maps-style map', 'Light style, a blue dot that follows, markers and a bottom sheet. The web dashboard got the same map.'],
   ['5 Oct'],
   ['0.1.8–14', '"Are you on a road?" and trains', 'Suburban trains are not re-asked at stations; train legs continue through station crawls; a bump answered "road" needs a second phone to confirm; https-only server link.']];
-$('rail').innerHTML = REL.map(([v, t, d, hl]) => t === undefined ? `<span class="day">${v}</span>`
-  : `<div class="rel${hl ? ' hl' : ''}"><span class="v">${v}</span><div><b>${t}.</b> <span>${d}</span></div></div>`).join('');
+(function versionTimeline() {
+  // newest first; each version keeps its day
+  const items = []; let day = '';
+  REL.forEach(([v, t, d, hl]) => { if (t === undefined) day = v; else items.push({ v, t, d, hl, day }); });
+  const n = items.length, STEP = 3500;
+  const days = [...new Set(items.map(x => x.day))];
+  $('vtRail').innerHTML = days.map(dy => `<div class="vtDay"><span>${dy}</span><div class="vtDots">` +
+    items.map((x, k) => x.day === dy ? `<button class="vtDot${x.hl ? ' hl' : ''}" data-k="${k}" aria-label="${x.v}: ${x.t}" title="${x.v} · ${x.t}"></button>` : '').join('') +
+    `</div></div>`).join('');
+  const dots = [...document.querySelectorAll('#vtRail .vtDot')].sort((a, b) => a.dataset.k - b.dataset.k);
+  const card = $('vtCard'), prog = $('vtProg'), play = $('vtPlay');
+  let i = 0, playing = !RM, timer = null, hover = false, visible = false;
+  const show = (k, user) => {
+    i = (k + n) % n;
+    const x = items[i];
+    const paint = () => {
+      card.innerHTML = `<span class="vv${x.hl ? '' : ' plain'}">${x.v}</span><div class="vt1"><b>${x.t}</b><em>${x.day}</em></div><p>${x.d}</p>`;
+      card.classList.remove('out');
+    };
+    if (RM || !card.innerHTML) paint(); else { card.classList.add('out'); setTimeout(paint, 220); }
+    dots.forEach((d, k2) => { d.classList.toggle('on', k2 === i); d.classList.toggle('seen', k2 < i); });
+    // keep the lit dot in view by scrolling the rail only (never the page)
+    const r = $('vtRail'), rb = r.getBoundingClientRect(), db = dots[i].getBoundingClientRect();
+    if (db.left < rb.left || db.right > rb.right) r.scrollLeft += db.left - rb.left - rb.width / 2;
+    $('vtCount').textContent = `${i + 1} of ${n}`;
+    restart();
+    if (user) { playing = false; sync(); }
+  };
+  const restart = () => {
+    clearTimeout(timer); prog.classList.remove('run'); void prog.offsetWidth;
+    if (playing && !hover && visible) {
+      prog.style.animationDuration = STEP + 'ms'; prog.classList.add('run');
+      timer = setTimeout(() => show(i + 1), STEP);
+    }
+  };
+  const ICON_PAUSE = '<svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><rect x="3.5" y="3" width="3" height="10" rx="1"/><rect x="9.5" y="3" width="3" height="10" rx="1"/></svg>';
+  const ICON_PLAY = '<svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M5 3.2v9.6a.6.6 0 0 0 .9.5l7.6-4.8a.6.6 0 0 0 0-1L5.9 2.7a.6.6 0 0 0-.9.5z"/></svg>';
+  const sync = () => { play.innerHTML = playing ? ICON_PAUSE : ICON_PLAY; play.setAttribute('aria-label', playing ? 'Pause' : 'Play'); restart(); };
+  play.onclick = () => { playing = !playing; sync(); };
+  $('vtPrev').onclick = () => show(i - 1, true);
+  $('vtNext').onclick = () => show(i + 1, true);
+  dots.forEach((d, k) => d.onclick = () => show(k, true));
+  const box = $('vt');
+  box.addEventListener('pointerenter', () => { hover = true; restart(); });
+  box.addEventListener('pointerleave', () => { hover = false; restart(); });
+  box.addEventListener('keydown', e => { if (e.key === 'ArrowRight') show(i + 1, true); if (e.key === 'ArrowLeft') show(i - 1, true); });
+  if ('IntersectionObserver' in window) new IntersectionObserver(es => { visible = es[0].isIntersecting; restart(); }, { threshold: 0.4 }).observe(box);
+  else visible = true;
+  show(0); sync();
+})();
 
 /* app screens: the real 0.1.25 screenshots once captured; until then clearly marked placeholders */
 $('appVer').textContent = 'version ' + L.app_version;
