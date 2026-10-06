@@ -296,9 +296,11 @@ footer { padding-block: 60px 50px; color: var(--ink-3); font-size: .8rem; displa
 .hero { position: relative; isolation: isolate; }
 .heroBg { position: absolute; inset: -60px -40px -20px 38%; z-index: -1; pointer-events: none;
   background: radial-gradient(42% 46% at 58% 44%, rgba(255, 140, 40, .24), transparent 70%), radial-gradient(36% 40% at 34% 74%, rgba(80, 110, 255, .16), transparent 70%); }
-.heroBg::after { content: ""; position: absolute; inset: 0; opacity: .55;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260' viewBox='0 0 260 260'%3E%3Cg fill='none' stroke='%23cfd8e6' stroke-width='7' stroke-linecap='round'%3E%3Cpath d='M-10 64C60 40 130 96 270 70'/%3E%3Cpath d='M62 -10C84 84 40 168 96 270'/%3E%3Cpath d='M-10 192C86 178 160 222 270 198'/%3E%3Cpath d='M182 -10C160 76 212 158 180 270'/%3E%3C/g%3E%3Cg fill='none' stroke='%23e3e9f2' stroke-width='3'%3E%3Cpath d='M0 128H260'/%3E%3Cpath d='M128 0V260'/%3E%3C/g%3E%3C/svg%3E");
-  -webkit-mask-image: radial-gradient(55% 55% at 58% 46%, #000 25%, transparent 72%); mask-image: radial-gradient(55% 55% at 58% 46%, #000 25%, transparent 72%); }
+.heroBg::before { content: ""; position: absolute; inset: 4% 2% 6% 4%; border-radius: 48px;
+  background: radial-gradient(75% 70% at 55% 48%, rgba(222, 229, 240, .9), rgba(236, 241, 248, .35) 70%, transparent 100%); }
+.heroBg::after { content: ""; position: absolute; inset: 0; opacity: 1;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260' viewBox='0 0 260 260'%3E%3Cg fill='none' stroke='%23b3bfd2' stroke-width='7' stroke-linecap='round'%3E%3Cpath d='M-10 64C60 40 130 96 270 70'/%3E%3Cpath d='M62 -10C84 84 40 168 96 270'/%3E%3Cpath d='M-10 192C86 178 160 222 270 198'/%3E%3Cpath d='M182 -10C160 76 212 158 180 270'/%3E%3C/g%3E%3Cg fill='none' stroke='%23cdd6e4' stroke-width='3'%3E%3Cpath d='M0 128H260'/%3E%3Cpath d='M128 0V260'/%3E%3C/g%3E%3C/svg%3E");
+  -webkit-mask-image: radial-gradient(70% 68% at 56% 48%, #000 40%, transparent 80%); mask-image: radial-gradient(70% 68% at 56% 48%, #000 40%, transparent 80%); }
 .chip .live { display: inline-flex; align-items: center; gap: 5px; font: 800 .68rem var(--font-body); color: #0e8a4a; text-transform: uppercase; letter-spacing: .05em; }
 .chip .live i { position: relative; width: 7px; height: 7px; border-radius: 50%; background: #12b76a; }
 .chip .live i::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: #12b76a; animation: ping 1.8s ease-out infinite; }
@@ -324,13 +326,14 @@ h1 .bump path { fill: none; stroke: url(#none); stroke: var(--brand-2); stroke-w
 .statbar .tile span:last-child { font-size: .72rem; line-height: 1.25; }
 @media (max-width: 560px) { .tiles.statbar { display: grid; grid-template-columns: 1fr 1fr; width: 100%; } .statbar .tile:nth-child(3) { border-left: 0; }
   .statbar .tile { padding: 8px 10px; } }
-.stage .phone { transform: perspective(1400px) rotateY(-13deg) rotateX(4deg) rotateZ(1.2deg); justify-self: end; margin-right: 8%;
+.stage .phone { transform: perspective(1400px) rotateY(-13deg) rotateX(4deg) rotateZ(1.2deg); justify-self: center; margin-right: 0;
   box-shadow: 28px 38px 70px rgba(11, 18, 32, .26), -2px 0 0 1px #1d2840 inset; }
 .stage .phone::after { content: ""; position: absolute; inset: 9px; border-radius: 34px; pointer-events: none;
   background: radial-gradient(70% 45% at var(--gx, 28%) var(--gy, 14%), rgba(255, 255, 255, .26), transparent 70%); }
-.float.a { left: 0; right: auto; top: 12%; }
-.float.b { left: 0; right: auto; bottom: 5%; width: min(218px, 58vw); }
+.float.a { left: -40px; right: auto; top: 5%; max-width: 210px; z-index: 2; }
+.float.b { left: auto; right: -52px; bottom: 2%; width: min(206px, 58vw); z-index: 2; }
 @media (max-width: 920px) { .heroBg { inset: -40px 0 -20px 0; } .stage .phone { justify-self: center; margin-right: 0; } .float.a { left: 2%; } .float.b { left: auto; right: 2%; } }
+@media (min-width: 921px) and (max-width: 1100px) { .float.a { left: 0; } .float.b { right: 0; } }
 @media (max-width: 560px) { .stage .phone { transform: none; } .float.b { display: none; } .float.a { top: 40%; left: 0; } }
 .stage .phone { animation: floaty 6s ease-in-out infinite; }
 .float.a { animation: floaty 5s ease-in-out .8s infinite; } .float.b { animation: floaty 7s ease-in-out 1.6s infinite; }
