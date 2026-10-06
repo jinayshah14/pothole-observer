@@ -300,6 +300,13 @@ footer { padding-block: 60px 50px; color: var(--ink-3); font-size: .8rem; displa
 .heroBg::after { content: ""; position: absolute; inset: 0; opacity: .85;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260' viewBox='0 0 260 260'%3E%3Cg fill='none' stroke='%23c3cddc' stroke-width='7' stroke-linecap='round'%3E%3Cpath d='M-10 64C60 40 130 96 270 70'/%3E%3Cpath d='M62 -10C84 84 40 168 96 270'/%3E%3Cpath d='M-10 192C86 178 160 222 270 198'/%3E%3Cpath d='M182 -10C160 76 212 158 180 270'/%3E%3C/g%3E%3Cg fill='none' stroke='%23d7deea' stroke-width='3'%3E%3Cpath d='M0 128H260'/%3E%3Cpath d='M128 0V260'/%3E%3C/g%3E%3C/svg%3E");
   -webkit-mask-image: radial-gradient(62% 62% at 57% 47%, #000 32%, transparent 78%); mask-image: radial-gradient(62% 62% at 57% 47%, #000 32%, transparent 78%); }
+/* the "Beta" switch in the top bar: opens the redesigned page (beta/), which has a "Classic" button back */
+.betaBtn { flex: none; display: inline-flex; align-items: center; gap: 7px; margin-left: 10px; padding: 7px 14px; border-radius: 999px;
+  background: #121417; color: #fff; font: 700 .8rem var(--font-body); text-decoration: none; letter-spacing: .02em;
+  box-shadow: 0 6px 16px rgba(18, 20, 23, .22); transition: transform .2s, box-shadow .2s; }
+.betaBtn i { width: 7px; height: 7px; border-radius: 50%; background: #ff6a00; box-shadow: 0 0 0 3px rgba(255, 106, 0, .25); }
+.betaBtn:hover { transform: translateY(-1px); box-shadow: 0 10px 22px rgba(18, 20, 23, .28); }
+@media (max-width: 560px) { .betaBtn { padding: 6px 10px; margin-left: 6px; } }
 .chip .live { display: inline-flex; align-items: center; gap: 5px; font: 800 .68rem var(--font-body); color: #0e8a4a; text-transform: uppercase; letter-spacing: .05em; }
 .chip .live i { position: relative; width: 7px; height: 7px; border-radius: 50%; background: #12b76a; }
 .chip .live i::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: #12b76a; animation: ping 1.8s ease-out infinite; }
@@ -728,6 +735,7 @@ canvas.seis { width: 100%; height: 76px; display: block; border-radius: 10px; ba
 <nav class="top"><div class="wrap">
   <div class="logo"><i><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 14h4l2-6 3 12 3-9 2 3h6"/></svg></i><span>Pothole Observer</span></div>
   <div class="links" id="links"><a href="#app">App</a><a href="#new">What's new</a><a href="#ride">Ride</a><a href="#map">Map</a><a href="#confidence">Confidence</a><a href="#raw">How it works</a><a href="#accuracy">Accuracy</a><a href="#built">Built</a></div>
+  <a class="betaBtn" href="beta/" title="Open the new Beta design of this page"><i></i>Beta</a>
 </div></nav>
 
 <main class="wrap">
