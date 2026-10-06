@@ -630,7 +630,7 @@ canvas.seis { width: 100%; height: 76px; display: block; border-radius: 10px; ba
 <div class="progress" id="progress"></div>
 <nav class="top"><div class="wrap">
   <div class="logo"><i><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 14h4l2-6 3 12 3-9 2 3h6"/></svg></i><span>Pothole Observer</span></div>
-  <div class="links" id="links"><a href="#new">What's new</a><a href="#ride">Ride</a><a href="#map">Map</a><a href="#confidence">Confidence</a><a href="#app">App</a><a href="#raw">How it works</a><a href="#accuracy">Accuracy</a><a href="#built">Built</a></div>
+  <div class="links" id="links"><a href="#app">App</a><a href="#new">What's new</a><a href="#ride">Ride</a><a href="#map">Map</a><a href="#confidence">Confidence</a><a href="#raw">How it works</a><a href="#accuracy">Accuracy</a><a href="#built">Built</a></div>
 </div></nav>
 
 <main class="wrap">
@@ -648,6 +648,11 @@ canvas.seis { width: 100%; height: 76px; display: block; border-radius: 10px; ba
       <div class="float b"><span class="k">What the phone felt</span><svg id="heroTrace" viewBox="0 0 280 70" role="img" aria-label="Vertical acceleration of the pothole hit"></svg></div>
     </div>
   </header>
+
+  <section id="app">
+    <div class="head"><span class="kicker">The app · <span id="appVer"></span></span><h2>Map · Rides · You</h2><p class="muted" id="appLead"></p></div>
+    <div class="gallery" id="gallery"></div>
+  </section>
 
   <section id="new">
     <div class="head"><span class="kicker">What's new</span><h2 id="newTitle">23 updates since 0.1.7</h2><p class="muted">Shipped from 5 to 7 October 2026. The app reminds you to ride (or starts by itself), saves every ride as it happens, and keeps itself up to date.</p></div>
@@ -754,7 +759,6 @@ canvas.seis { width: 100%; height: 76px; display: block; border-radius: 10px; ba
         </div>
       </article>
     </div>
-    <div class="grid3 also" id="also"></div>
     <div class="card vt" id="vt" aria-roledescription="carousel" aria-label="Every version since 0.1.7">
       <div class="vtHead"><h3>Every version since 0.1.7</h3>
         <div class="vtCtl"><span class="tiny mono" id="vtCount"></span>
@@ -825,10 +829,6 @@ canvas.seis { width: 100%; height: 76px; display: block; border-radius: 10px; ba
     </div>
   </section>
 
-  <section id="app">
-    <div class="head"><span class="kicker">The app · <span id="appVer"></span></span><h2>Map · Rides · You</h2><p class="muted" id="appLead"></p></div>
-    <div class="gallery" id="gallery"></div>
-  </section>
 
   <section id="raw">
     <div class="head"><span class="kicker">How it works · raw data</span><h2>What one ride records</h2><p class="muted" id="rawLead"></p></div>
@@ -1099,10 +1099,6 @@ const wireFlips = (function () {
 })();
 wireFlips([...document.querySelectorAll('.flip')]);
 /* what's new since 0.1.7 */
-[['layout', COL.speed_breaker, 'A new look', '0.1.15 · 0.1.19', 'Map · Rides · You tabs, search, a Google-Maps-style map with a blue dot that follows, ride mode with hold-to-stop, a ride summary, review, phone health and dark mode.'],
- ['train', COL.navy, 'Trains are not roads', '0.1.7 – 0.1.14', '"Are you on a road?" keeps train legs off the map. Suburban trains are not re-asked at every station, and a bump answered "road" needs a second phone to confirm.'],
- ['lock', COL.good, 'Private by default', '0.1.25 · 0.1.26', 'Each phone has its own secret, so riders see only their own rides, and only the owner can change the map. The start and end of every route stay on the phone.']]
-  .forEach(([ic, c, t, v, d]) => $('also').appendChild(H('div', { class: 'card mini' }, `<span class="ic" style="background:${c}">${svgIcon(ic, '#fff')}</span><div><h3>${t}</h3><span class="tiny mono">${v}</span><p>${d}</p></div>`)));
 const REL = [['7 Oct'],
   ['0.1.30', 'Instant mode, safer', 'An automatic start must feel a road, not a train, and a start it rejects still gets a reminder.', 1],
   ['0.1.29', 'Instant mode', 'Optional: starts recording by itself when you leave home or work, or move at vehicle speed. Starts that are not a ride are never sent.', 1],
