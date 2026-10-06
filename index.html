@@ -421,6 +421,35 @@ canvas.seis { width: 100%; height: 76px; display: block; border-radius: 10px; ba
   .spot4 > .flip { scroll-snap-align: start; }
 }
 @media (max-width: 560px) { .spot4 { grid-auto-columns: 76%; gap: 12px; } }
+/* what runs today: a slim flow line, four small flip cards (one line in front, three on the back), the gate in one line */
+.flowLine { display: flex; align-items: center; gap: 8px; margin: 4px 0 18px; overflow-x: auto; scrollbar-width: none; padding: 2px; }
+.flowLine::-webkit-scrollbar { display: none; }
+.flowLine .stop { flex: 1 1 0; min-width: 150px; display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--card);
+  border-radius: 14px; box-shadow: var(--shadow); }
+.flowLine .stop .ic { width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center; flex: none; }
+.flowLine .stop .ic svg { width: 17px; height: 17px; }
+.flowLine .stop b { display: block; font-size: .86rem; line-height: 1.2; }
+.flowLine .stop span { display: block; font-size: .72rem; color: var(--ink-3); line-height: 1.3; }
+.flowLine .arr { flex: none; color: var(--brand); font-weight: 800; }
+.flowLine { align-items: stretch; } .flowLine .arr { align-self: center; }
+@media (max-width: 560px) {  /* phones: a tidy 2 × 2 grid, the order reads left-right, top-bottom */
+  .flowLine { display: grid; grid-template-columns: 1fr 1fr; overflow: visible; }
+  .flowLine .arr { display: none; }
+  .flowLine .stop { min-width: 0; }
+}
+.built4 .face { padding: 14px; }
+.built4 .front { grid-template-rows: auto auto auto 1fr; gap: 6px; }
+.built4 .front .ic { width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; }
+.built4 .front .ic svg { width: 20px; height: 20px; }
+.built4 .ver { font: 600 .7rem var(--font-mono); color: var(--ink-3); }
+.built4 .front p { margin: 0; font-size: .82rem; color: var(--ink-2); line-height: 1.4; }
+.built4 .back ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: .8rem; color: var(--ink-2); }
+.built4 .back li { display: grid; grid-template-columns: 14px minmax(0, 1fr); gap: 6px; }
+.built4 .back li::before { content: "✓"; color: #12a150; font-weight: 800; }
+.gateLine { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 18px; padding: 12px 16px; background: var(--card);
+  border-radius: 14px; box-shadow: var(--shadow); font-size: .86rem; }
+.gateLine .pill { font-size: .66rem; }
+.gateLine .muted { font-size: .82rem; }
 .flip { perspective: 1200px; border-radius: var(--r); cursor: pointer; outline: none; -webkit-tap-highlight-color: transparent; }
 .flipIn { display: grid; height: 100%; transform-style: preserve-3d; transition: transform .65s cubic-bezier(.2, .8, .2, 1); }
 .flip .face { grid-area: 1 / 1; min-width: 0; display: grid; align-content: start; gap: 9px; padding: 12px; background: var(--card);
@@ -818,17 +847,10 @@ canvas.seis { width: 100%; height: 76px; display: block; border-radius: 10px; ba
   </section>
 
   <section id="built">
-    <div class="head"><span class="kicker">Built and running</span><h2>What runs today</h2><p class="muted">The server moved off the laptop on 4 October. It now runs in the cloud on free plans, so rides arrive with the laptop switched off.</p></div>
-    <div class="shipped" id="shipGrid"></div>
-    <div class="sys" style="margin-top:22px" id="sys"></div>
-    <div class="card" style="margin-top:22px">
-      <div class="row" style="justify-content:space-between;margin-bottom:14px"><h3>No model reaches phones without the gate and a named person</h3></div>
-      <div class="outcomes" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
-        <div class="outcome"><span class="pill good">PROMOTE</span>Better, and no worse for any vehicle or speed. A person approves; it ships to app and server.</div>
-        <div class="outcome"><span class="pill crit">REJECT</span>Worse somewhere that matters, or the model file is broken.</div>
-        <div class="outcome"><span class="pill warn">INCONCLUSIVE</span>Too little evidence. Shipping needs a person's explicit sign-off.</div>
-      </div>
-    </div>
+    <div class="head"><span class="kicker">Built and running</span><h2>What runs today</h2><p class="muted">All on free cloud plans: rides arrive with the laptop switched off.</p></div>
+    <div class="flowLine" id="sys" role="list" aria-label="How a ride travels"></div>
+    <div class="spot4 built4" id="shipGrid" role="list"></div>
+    <div class="gateLine"><b>New models pass a gate</b><span class="pill good">PROMOTE</span><span class="pill crit">REJECT</span><span class="pill warn">INCONCLUSIVE</span><span class="muted">and a named person signs off before phones get them.</span></div>
     <div class="head carHead" style="margin-top:40px"><h3 style="font-size:1.3rem">Fixed after field tests</h3>
       <div class="carNav"><span class="tiny mono" id="lessonCount"></span>
         <button class="carBtn" id="lessonPrev" aria-label="Previous fix">&#8249;</button><button class="carBtn" id="lessonNext" aria-label="Next fix">&#8250;</button></div></div>
@@ -990,13 +1012,14 @@ else heroMock();
 
 /* what's new: flip cards. Mouse: hover turns a card (CSS). Touch / pen: a tap turns it, a tap elsewhere turns it back.
    Keyboard: focus turns it, Enter or Space turns it back and forth, leaving turns it back. */
-(function flips() {
-  const cards = [...document.querySelectorAll('.flip')];
+const wireFlips = (function () {
+  const cards = [];
   let pt = 'mouse', kbd = false;  // kbd: the last input was the keyboard (Tab), so a focus came from it
   document.addEventListener('keydown', e => { if (e.key === 'Tab') kbd = true; }, true);
   document.addEventListener('pointerdown', () => { kbd = false; }, true);
   const set = (c, v) => c.classList.toggle('on', v);
-  cards.forEach(c => {
+  return list => list.forEach(c => {
+    cards.push(c);
     c.addEventListener('pointerdown', e => { pt = e.pointerType || 'mouse'; }, { passive: true });
     c.addEventListener('focus', () => { if (kbd) set(c, true); });
     c.addEventListener('blur', () => set(c, false));
@@ -1005,6 +1028,7 @@ else heroMock();
       const v = !c.classList.contains('on'); cards.forEach(o => o !== c && set(o, false)); set(c, v); });
   });
 })();
+wireFlips([...document.querySelectorAll('.flip')]);
 /* what's new since 0.1.7 */
 [['layout', COL.speed_breaker, 'A new look', '0.1.15 · 0.1.19', 'Map · Rides · You tabs, search, a Google-Maps-style map with a blue dot that follows, ride mode with hold-to-stop, a ride summary, review, phone health and dark mode.'],
  ['train', COL.navy, 'Trains are not roads', '0.1.7 – 0.1.14', '"Are you on a road?" keeps train legs off the map. Suburban trains are not re-asked at every station, and a bump answered "road" needs a second phone to confirm.'],
@@ -1437,18 +1461,28 @@ drawCalc();
   $('note0').innerHTML = `<b class="n">${LT.confirmed}</b><div><b>Nothing is confirmed yet.</b> A spot is confirmed at 90% from two or more rides; the closest is at ${pct(top.max)} after ${top.rides} rides. With one rider so far, a second phone on the same roads is the next big step.</div>`;
 })();
 
-/* built and running */
-[['phone', COL.bike, 'Android app', `version ${L.app_version}`, ['Live detection with a beep', 'Map · Rides · You, search, dark mode', 'Ride mode with hold-to-stop and a summary', 'Travel reminder, widget, quick tile, auto-stop', 'Saved to the cloud about every minute', 'Updates itself, never mid-ride', 'Its own secret on every phone']],
- ['tree', COL.pothole, 'Detection model', 'version 2026.10.03', ['Two forests: 120 + 100 trees', '50 measurements per jolt', 'Type shown only when 60% sure', 'Trained on 3,676 jolts from public datasets', 'Identical on phone and server']],
- ['cloud', COL.navy, 'Cloud server', 'free plans, laptop off', ['Re-runs every ride with the shipped model', 'Merges rides into one shared map', 'Takes rides in one-minute pieces', 'Raw recordings in a private dataset', 'Serves the app and its updates', 'Web dashboard with the same map']],
- ['shield', COL.good, 'Release safety', 'gate v1.3', ['Route-separated tests', '3 training runs, 5,000 resamples', 'Red flags for any worse group', 'Model registry with named approvals']]]
-  .forEach(([ic, c, t, v, li]) => $('shipGrid').appendChild(H('div', { class: 'card ship' }, `<span class="ic" style="width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:${c}">${svgIcon(ic, '#fff')}</span><div><h3>${t}</h3><span class="ver">${v}</span></div><ul>${li.map(x => `<li><span>${x}</span></li>`).join('')}</ul>`)));
-document.querySelectorAll('.ship .ic svg').forEach(s => { s.style.width = '22px'; s.style.height = '22px'; });
-[['phone', COL.bike, 'Phone app', ['Records and detects live', 'Sends the ride about every minute']],
- ['cloud', COL.speed_breaker, 'Cloud server', ['Render, free plan', 'Re-runs and merges every ride']],
- ['db', COL.navy, 'Storage', ['Neon Postgres: rides and spots', 'Private dataset: raw recordings (opt-in)']],
- ['web', COL.brand2, 'Website', ['Dashboard, rides map, setup', 'This page, on GitHub Pages']]]
-  .forEach(([ic, c, t, li]) => $('sys').appendChild(H('div', { class: 'node' }, `<span class="ic" style="background:${c}">${svgIcon(ic, '#fff')}</span><h3>${t}</h3><ul>${li.map(x => `<li>${x}</li>`).join('')}</ul>`)));
+/* built and running: four small flip cards (one line in front, three short lines on the back) */
+[['phone', COL.bike, 'Android app', `version ${L.app_version}`, 'Feels bumps live and saves the ride every minute.',
+   ['Map · Rides · You, with a ride mode', 'Reminds you, or starts by itself', 'Updates itself, never mid-ride']],
+ ['tree', COL.pothole, 'Detection model', 'version 2026.10.03', 'Two small forests, the same on phone and server.',
+   ['50 measurements per bump', 'Type shown only when 60% sure', '3,676 training bumps, public datasets']],
+ ['cloud', COL.navy, 'Cloud server', 'free plan', 'Merges every ride into one shared map.',
+   ['Re-checks rides with the shipped model', 'Rides arrive in one-minute pieces', 'Serves the app and its updates']],
+ ['shield', COL.good, 'Release safety', 'gate v1.3', 'No new model ships without passing tests.',
+   ['Tested on routes it never saw', 'Flags any group that got worse', 'A named person approves']]]
+  .forEach(([ic, c, t, v, line, li]) => $('shipGrid').appendChild(H('article', { class: 'flip', role: 'listitem', tabindex: '0' },
+    `<div class="flipIn"><div class="face front"><span class="ic" style="background:${c}">${svgIcon(ic, '#fff')}</span>` +
+    `<div><h3>${t}</h3><span class="ver">${v}</span></div><p>${line}</p><span class="flipHint" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 6.5A5.5 5.5 0 0 0 3 5M2.5 9.5A5.5 5.5 0 0 0 13 11"/><path d="M3 2v3h3M13 14v-3h-3"/></svg><span class="hv">Hover for details</span><span class="tp">Tap for details</span></span></div>` +
+    `<div class="face back"><h3 aria-hidden="true">${t}</h3><ul>${li.map(x => `<li>${x}</li>`).join('')}</ul></div></div>`)));
+wireFlips([...document.querySelectorAll('#shipGrid .flip')]);
+[['phone', COL.bike, 'Phone', 'records & detects'],
+ ['cloud', COL.speed_breaker, 'Cloud server', 'merges every ride'],
+ ['db', COL.navy, 'Storage', 'rides, spots, recordings'],
+ ['web', COL.brand2, 'Website', 'map, dashboard, this page']]
+  .forEach(([ic, c, t, d], k) => {
+    if (k) $('sys').appendChild(H('span', { class: 'arr', 'aria-hidden': 'true' }, '→'));
+    $('sys').appendChild(H('div', { class: 'stop', role: 'listitem' }, `<span class="ic" style="background:${c}">${svgIcon(ic, '#fff')}</span><div><b>${t}</b><span>${d}</span></div>`));
+  });
 [['Car', 'False bumps when speeding or steering', 'Phone wobbling in its holder', 'Pause detection while the holder wobbles', '−49% car reports', '0 of 181 public potholes lost'],
  ['Car', 'Real potholes missed', 'Suspension softens the hit', 'Lower trigger for cars', '67% → 77%', 'labelled potholes that fire the trigger'],
  ['Car', '"Speed breaker" called at speed', 'Fast humps look like breakers', 'Breaker label needs a slow crossing', '62% → 67%', 'breaker labels correct'],
