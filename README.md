@@ -1,7 +1,7 @@
 # Pothole Observer
 
-Showcase of a camera-free pothole and speed-breaker detector: an Android app that detects road defects from motion sensors, a server that merges every ride into one shared map, and a look inside the model on real jolts.
+Showcase of a camera-free pothole and speed-breaker detector: an Android app that feels the road with motion sensors, saves every ride to the cloud as it happens, and merges every ride into one shared map.
 
 Live page: https://jinayshah14.github.io/pothole-observer/
 
-Data: field rides recorded on 3 October 2026. Map data © OpenStreetMap contributors · OpenMapTiles · OpenFreeMap.
+Data: live numbers, routes and suspected spots from the cloud server (2026-10-06 20:58 IST); ride replays and the model walkthrough from the field rides of 3 October 2026. Map data © OpenStreetMap contributors · OpenMapTiles · OpenFreeMap.
