@@ -361,6 +361,21 @@ canvas.seis { width: 100%; height: 76px; display: block; border-radius: 10px; ba
 .fstep .fbar span { color: #fff; font: inherit; }  /* the step label rule above must not grey the number inside the bar */
 /* v4 (6 Oct 2026): what's new, live map, confidence from the server, honest accuracy, app 0.1.25 */
 .grid2 > .card, .grid3 > .card { min-width: 0; }
+/* "Fixed after field tests": one row that slides (2 cards on wide screens, 1 on phones) instead of a 3x3 wall */
+.carHead { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; max-width: none; width: 100%; }
+.carNav { display: flex; align-items: center; gap: 8px; }
+.carBtn { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--line, #e4e7ec); background: #fff; color: inherit;
+  font-size: 1.4rem; line-height: 1; cursor: pointer; display: grid; place-items: center; transition: background .2s, transform .2s; }
+.carBtn:hover { background: #f2f4f7; transform: translateY(-1px); }
+.carousel .carTrack { position: relative; display: grid; grid-auto-flow: column; grid-auto-columns: calc((100% - 18px) / 2); gap: 18px;
+  overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; scrollbar-width: none; outline: none;
+  padding: 6px 4px 26px; margin: 0 -4px -20px; }
+.carousel .carTrack::-webkit-scrollbar { display: none; }
+.carousel .carTrack > .card { scroll-snap-align: start; min-width: 0; }
+.carousel .dots { display: flex; justify-content: center; gap: 6px; margin-top: 6px; }
+.carousel .dots button { width: 7px; height: 7px; padding: 0; border: 0; border-radius: 4px; background: #d0d5dd; cursor: pointer; transition: width .3s, background .3s; }
+.carousel .dots button.on { width: 18px; background: var(--brand, #f97316); }
+@media (max-width: 720px) { .carousel .carTrack { grid-auto-columns: 88%; gap: 12px; } .carNav .carBtn { display: none; } }
 /* hero: illustrated Map tab (until a real 0.1.25 screenshot is supplied) */
 .mock { position: absolute; inset: 0; background: #eef1f5; color: var(--ink); font-family: var(--font-body); overflow: hidden; }
 .mock svg.mm { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
@@ -724,8 +739,13 @@ canvas.seis { width: 100%; height: 76px; display: block; border-radius: 10px; ba
         <div class="outcome"><span class="pill warn">INCONCLUSIVE</span>Too little evidence. Shipping needs a person's explicit sign-off.</div>
       </div>
     </div>
-    <div class="head" style="margin-top:40px"><h3 style="font-size:1.3rem">Fixed after field tests</h3></div>
-    <div class="grid3" id="lessonGrid"></div>
+    <div class="head carHead" style="margin-top:40px"><h3 style="font-size:1.3rem">Fixed after field tests</h3>
+      <div class="carNav"><span class="tiny mono" id="lessonCount"></span>
+        <button class="carBtn" id="lessonPrev" aria-label="Previous fix">&#8249;</button><button class="carBtn" id="lessonNext" aria-label="Next fix">&#8250;</button></div></div>
+    <div class="carousel" aria-roledescription="carousel" aria-label="Fixed after field tests">
+      <div class="carTrack" id="lessonGrid" tabindex="0"></div>
+      <div class="dots" id="lessonDots"></div>
+    </div>
     <div class="head" style="margin-top:40px"><h3 style="font-size:1.3rem">What makes it better next</h3></div>
     <div class="next4" id="next4"></div>
   </section>
@@ -1272,6 +1292,37 @@ document.querySelectorAll('.ship .ic svg').forEach(s => { s.style.width = '22px'
  ['App', '"App not installed" after an update', 'File replaced mid-download', 'The app downloads, checks and installs its own updates', 'Self-update', 'fingerprint-checked, from 0.1.23']]
   .forEach(([tag, prob, cause, fix, res, sub]) => $('lessonGrid').appendChild(H('article', { class: 'card lesson' },
     `<span class="pill quiet" style="justify-self:start">${tag}</span><h3>${prob}</h3><dl class="pf"><dt>Cause</dt><dd>${cause}</dd><dt>Fix</dt><dd>${fix}</dd></dl><div><div class="res">${res}</div><span class="tiny">${sub}</span></div>`)));
+(function lessonCarousel() {
+  const tr = $('lessonGrid'), cards = [...tr.children], n = cards.length, dots = $('lessonDots');
+  if (n < 2) return;
+  cards.forEach((c, k) => { c.setAttribute('aria-label', `${k + 1} of ${n}`); dots.appendChild(H('button', { 'aria-label': `Show fix ${k + 1}` })); });
+  const step = () => cards[1].offsetLeft - cards[0].offsetLeft;
+  const per = () => Math.max(1, Math.round((tr.clientWidth + 18) / step()));
+  const idx = () => Math.round(tr.scrollLeft / step());
+  const last = () => Math.max(0, n - per());
+  const go = i => { const L = last(); i = i > L ? 0 : i < 0 ? L : i; tr.scrollTo({ left: i * step(), behavior: RM ? 'auto' : 'smooth' }); };
+  const sync = () => {
+    const i = Math.min(idx(), last()), p = per();
+    [...dots.children].forEach((d, k) => d.classList.toggle('on', k >= i && k < i + p));
+    $('lessonCount').textContent = `${i + 1}${p > 1 ? '–' + Math.min(n, i + p) : ''} of ${n}`;
+  };
+  let touched = 0, hover = false, timer = null;
+  const user = () => { touched = Date.now(); };
+  $('lessonPrev').onclick = () => { user(); go(idx() - 1); };
+  $('lessonNext').onclick = () => { user(); go(idx() + 1); };
+  [...dots.children].forEach((d, k) => d.onclick = () => { user(); go(Math.min(k, last())); });
+  tr.addEventListener('scroll', () => requestAnimationFrame(sync), { passive: true });
+  tr.addEventListener('pointerdown', user, { passive: true });
+  tr.addEventListener('keydown', e => { if (e.key === 'ArrowRight') { user(); go(idx() + 1); } if (e.key === 'ArrowLeft') { user(); go(idx() - 1); } });
+  tr.addEventListener('pointerenter', () => hover = true); tr.addEventListener('pointerleave', () => hover = false);
+  window.addEventListener('resize', () => requestAnimationFrame(sync));
+  // slides on by itself, slowly, only while on screen; never after the reader takes over for 15 s; never with reduced motion
+  if (!RM && 'IntersectionObserver' in window) new IntersectionObserver(es => {
+    clearInterval(timer);
+    if (es[0].isIntersecting) timer = setInterval(() => { if (!hover && Date.now() - touched > 15000) go(idx() + 1); }, 6000);
+  }, { threshold: 0.5 }).observe(tr);
+  sync();
+})();
 $('next4').innerHTML = [['Survey local spots', 'Mark 60–100 potholes and breakers on local roads to get the first Indian accuracy numbers.'],
   ['Retrain with the fixed recipe', 'Offline it lifts bumps found from 21% to 53% at the same false-alert rate. It ships only through the gate.'],
   ['More phones on the same roads', 'A second rider cross-checks spots. Fixed phones on buses or garbage trucks would pass the same roads every day.'],
