@@ -330,7 +330,7 @@ h1 .bump path { fill: none; stroke: url(#none); stroke: var(--brand-2); stroke-w
   background: radial-gradient(70% 45% at var(--gx, 28%) var(--gy, 14%), rgba(255, 255, 255, .26), transparent 70%); }
 .float.a { left: 0; right: auto; top: 12%; }
 .float.b { left: 0; right: auto; bottom: 5%; width: min(218px, 58vw); }
-@media (max-width: 920px) { .stage .phone { justify-self: center; margin-right: 0; } .float.a { left: 2%; } .float.b { left: auto; right: 2%; } }
+@media (max-width: 920px) { .heroBg { inset: -40px 0 -20px 0; } .stage .phone { justify-self: center; margin-right: 0; } .float.a { left: 2%; } .float.b { left: auto; right: 2%; } }
 @media (max-width: 560px) { .stage .phone { transform: none; } .float.b { display: none; } .float.a { top: 40%; left: 0; } }
 .stage .phone { animation: floaty 6s ease-in-out infinite; }
 .float.a { animation: floaty 5s ease-in-out .8s infinite; } .float.b { animation: floaty 7s ease-in-out 1.6s infinite; }
@@ -344,6 +344,41 @@ h1 .bump path { fill: none; stroke: url(#none); stroke: var(--brand-2); stroke-w
 .card { transition: transform .25s ease, box-shadow .25s ease; }
 .lesson:hover, .finding:hover, .ship:hover, .next4 .card:hover { transform: translateY(-3px); box-shadow: 0 2px 4px rgba(16, 24, 40, .06), 0 20px 44px rgba(16, 24, 40, .11); }
 .shot .phone { transition: transform .4s cubic-bezier(.2, .8, .2, 1); }
+/* app screens as a journey: the steps of one ride scroll by on the left while the phone stays pinned on the right and
+   shows each step's real screen; a rail fills as the ride goes on; any step can be clicked. Phones: the phone pins on top. */
+.journey { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 340px); gap: 48px; align-items: start; overflow-x: clip; overflow-y: visible; }
+.jSteps { position: relative; padding: 6vh 0 10vh; }
+.jSteps::before, .jFill { content: ""; position: absolute; left: 19px; top: calc(6vh + 20px); width: 2px; border-radius: 2px; }
+.jSteps::before { bottom: calc(10vh + 20px); background: var(--line); }
+.jFill { height: 0; background: linear-gradient(var(--brand), var(--brand-2)); transition: height .5s cubic-bezier(.2, .8, .2, 1); }
+.jStep { position: relative; min-height: 46vh; display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 18px; align-content: center;
+  opacity: .32; transition: opacity .45s; cursor: pointer; }
+.jStep.on { opacity: 1; }
+.jNum { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font: 800 .95rem var(--font-display);
+  background: var(--card); box-shadow: 0 0 0 2px var(--line); color: var(--ink-2); transition: background .4s, color .4s, box-shadow .4s; z-index: 1; }
+.jStep.on .jNum, .jStep.done .jNum { background: linear-gradient(135deg, var(--brand), var(--brand-2)); color: #fff; box-shadow: 0 6px 16px rgba(255, 106, 0, .3); }
+.jKick { font: 800 .7rem var(--font-body); text-transform: uppercase; letter-spacing: .08em; color: var(--brand-2); }
+.jStep h3 { font: 800 clamp(1.4rem, 2.6vw, 1.9rem) var(--font-display); letter-spacing: -.02em; margin: 4px 0 8px; line-height: 1.15; }
+.jStep p { color: var(--ink-2); font-size: 1rem; line-height: 1.55; max-width: 44ch; margin: 0; }
+.jTags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.jTags span { font: 700 .7rem var(--font-body); padding: 3px 9px; border-radius: 999px; background: #fff2e6; color: #c2410c; }
+.jPhoneWrap { position: sticky; top: calc(50vh - 300px); display: grid; justify-items: center; gap: 14px; }
+.jPhone { position: relative; width: 268px; aspect-ratio: 9 / 19.5; border-radius: 42px; background: #0b1220; padding: 9px;
+  box-shadow: 0 34px 70px rgba(11, 18, 32, .3); }
+.jPhone .screen { position: relative; width: 100%; height: 100%; border-radius: 34px; overflow: hidden; background: #fff; }
+.jPhone .screen img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top; opacity: 0;
+  transform: scale(1.05) translateY(10px); transition: opacity .55s ease, transform .7s cubic-bezier(.2, .8, .2, 1); }
+.jPhone .screen img.on { opacity: 1; transform: none; }
+.jGlow { position: absolute; inset: 10% -12%; z-index: -1; border-radius: 50%; filter: blur(30px);
+  background: radial-gradient(closest-side, rgba(255, 140, 40, .28), transparent), radial-gradient(closest-side at 70% 70%, rgba(80, 110, 255, .2), transparent); }
+.jStepNow { font: 700 .78rem var(--font-body); color: var(--ink-2); }
+@media (max-width: 900px) {
+  .journey { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .jPhoneWrap { order: -1; top: 58px; z-index: 3; padding: 8px 0 14px; background: linear-gradient(var(--bg) 82%, transparent); }
+  .jPhone { width: 150px; border-radius: 26px; padding: 6px; } .jPhone .screen { border-radius: 21px; }
+  .jStep { min-height: 40vh; } .jStepNow { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .jPhone .screen img { transform: none; transition: opacity .2s; } }
 /* app screens: a 3D carousel. The chosen screen is big in the middle, the neighbours angled behind it; it turns by
    itself, pauses on hover, and arrows, dots, swipe, keys or a click on any phone move it. */
 .cf { display: grid; gap: 14px; }
@@ -712,7 +747,7 @@ canvas.seis { width: 100%; height: 76px; display: block; border-radius: 10px; ba
   </header>
 
   <section id="app">
-    <div class="head"><span class="kicker">The app · <span id="appVer"></span></span><h2>Map · Rides · You</h2><p class="muted" id="appLead"></p></div>
+    <div class="head"><span class="kicker">The app · <span id="appVer"></span></span><h2>One ride, start to finish</h2><p class="muted" id="appLead"></p></div>
     <div class="gallery" id="gallery"></div>
   </section>
 
@@ -1238,50 +1273,48 @@ const REL = [['7 Oct'],
 $('appVer').textContent = 'version ' + L.app_version;
 // only screens that exist are shown (no placeholders on the public page)
 const SHOWN = SHOTS.filter(s => !s.missing);
-$('appLead').textContent = `Screens of app ${L.app_version} on a test phone, showing the shared map's real spots. Redesigned in 0.1.19.`;
-(function coverflow() {
-  const host = $('gallery'), list = SHOWN.filter(s => !s.video), n = list.length;
-  if (!n) return;
-  host.className = 'cf'; host.setAttribute('aria-roledescription', 'carousel'); host.setAttribute('aria-label', 'Screens of the app');
-  const stage = H('div', { class: 'cfStage', tabindex: '0' }), cap = H('div', { class: 'cfCap', 'aria-live': 'polite' });
-  const dotsEl = H('div', { class: 'cfDots' }), prev = H('button', { class: 'carBtn', type: 'button', 'aria-label': 'Previous screen' }, '&#8249;'),
-    next = H('button', { class: 'carBtn', type: 'button', 'aria-label': 'Next screen' }, '&#8250;'), nav = H('div', { class: 'cfNav' });
-  const figs = list.map((s, k) => {
-    const f = H('figure', { class: 'cfItem', 'aria-label': s.title }, `<div class="phone"><div class="screen"><img src="${s.src}" alt="${s.title} screen of the app" loading="${k < 3 || k > n - 3 ? 'eager' : 'lazy'}"></div></div>`);
-    f.onclick = () => go(k, true); stage.appendChild(f);
-    const d = H('button', { type: 'button', 'aria-label': `Show ${s.title}` }); d.onclick = () => go(k, true); dotsEl.appendChild(d);
-    return f;
+$('appLead').textContent = `Real screens of app ${L.app_version}. Scroll through one ride, from the reminder to the shared map.`;
+(function journey() {
+  const host = $('gallery'), byT = Object.fromEntries(SHOWN.filter(x => !x.missing && !x.video).map(x => [x.title, x]));
+  const STEPS = [
+    ['Travel reminder', 'Before the ride', 'It reminds you to start', 'Your phone notices it is in a vehicle and rings for two seconds, even on silent. Or let Instant mode start recording by itself.', ['Rings on silent', 'Instant mode', 'Bluetooth start']],
+    ['Map', 'Get going', 'Start in one tap', 'Pick two-wheeler or car, tap Start ride. The map already shows the potholes and speed breakers other rides found.', ['No camera', 'Two-wheeler or car']],
+    ['Ride mode', 'On the road', 'Ride, and it feels the bumps', 'Keep the phone in its holder. A blue dot follows you, GPS speed shows, and every pothole is felt and noted live.', ['Live detection', 'Hold Stop to end']],
+    ['Ride summary', 'Arrived', 'See what the ride found', 'The route framed on the map, with the kilometres, the minutes and every bump. The first and last 200 m stay private.', ['Route on the map', 'Private ends']],
+    ['Rides', 'Behind the scenes', 'Saved to the cloud as you ride', 'A piece of the ride goes up about every minute, so a dead phone loses nothing. Every ride shows its cloud badge.', ['Every minute', 'Nothing lost']],
+    ['Tap a spot', 'The shared map', 'Every ride makes the map surer', 'Tap a spot: "Likely pothole · felt on 2 of 3 passes", and what would confirm it. A second rider turns it Confirmed.', ['Counts, not guesses', '2 phones confirm']],
+    ['Updates itself', 'Always current', 'It keeps itself up to date', 'New versions download and install over the app in the background: fingerprint-checked, never during a ride.', ['Self-update', 'Rides kept']],
+    ['Dark mode', 'Day or night', 'Made for the ride home too', 'Dark mode for night rides, a phone-health check, and You › Your data for every choice you made.', ['Dark mode', 'Phone health', 'Your data']],
+  ].filter(st => byT[st[0]]);
+  if (!STEPS.length) return;
+  host.className = 'journey';
+  const steps = H('div', { class: 'jSteps' }), fill = H('i', { class: 'jFill' }); steps.appendChild(fill);
+  const wrap = H('div', { class: 'jPhoneWrap' }), phone = H('div', { class: 'jPhone', role: 'img', 'aria-label': 'The app screen for the current step' }),
+    screen = H('div', { class: 'screen' }), now = H('div', { class: 'jStepNow' });
+  phone.appendChild(screen); wrap.append(H('div', { class: 'jGlow' }), phone, now);
+  const imgs = STEPS.map(([t], k) => { const im = H('img', { src: byT[t].src, alt: `${t} screen of the app`, loading: k < 2 ? 'eager' : 'lazy' }); screen.appendChild(im); return im; });
+  const els = STEPS.map(([t, kick, h, p, tags], k) => {
+    const e = H('article', { class: 'jStep', tabindex: '0', 'aria-label': `Step ${k + 1}: ${h}` },
+      `<span class="jNum">${k + 1}</span><div><span class="jKick">${kick}</span><h3>${h}</h3><p>${p}</p><div class="jTags">${tags.map(x => `<span>${x}</span>`).join('')}</div></div>`);
+    e.onclick = () => e.scrollIntoView({ behavior: RM ? 'auto' : 'smooth', block: 'center' });
+    e.onkeydown = ev => { if (ev.key === 'Enter') e.click(); };
+    steps.appendChild(e); return e;
   });
-  nav.append(prev, dotsEl, next); host.append(stage, cap, nav);
-  let i = 0, timer = null, hover = false, visible = false, touched = 0;
-  const step = () => Math.min(250, stage.clientWidth * .3);
-  function place() {
-    figs.forEach((f, k) => {
-      let d = k - i; if (d > n / 2) d -= n; if (d < -n / 2) d += n;  // wrap: neighbours on both sides
-      const a = Math.abs(d), show = a <= 2;
-      f.style.transform = `translateX(${d * step()}px) translateZ(${-a * 140}px) rotateY(${-Math.sign(d) * Math.min(a, 2) * 18}deg) scale(${1 - a * .1})`;
-      f.style.opacity = show ? [1, .8, .38][a] : 0; f.style.zIndex = String(10 - a); f.style.pointerEvents = show ? 'auto' : 'none';
-      f.classList.toggle('on', a === 0);
-    });
-    cap.innerHTML = `<b>${list[i].title}</b><span>${list[i].caption}</span>`;
-    [...dotsEl.children].forEach((d, k) => d.classList.toggle('on', k === i));
+  host.append(steps, wrap);
+  let cur = -1;
+  const set = k => {
+    if (k === cur) return; cur = k;
+    els.forEach((e, j) => { e.classList.toggle('on', j === k); e.classList.toggle('done', j < k); });
+    imgs.forEach((im, j) => im.classList.toggle('on', j === k));
+    now.textContent = `Step ${k + 1} of ${STEPS.length} · ${STEPS[k][2]}`;
+    const a = els[0], b = els[k]; fill.style.height = `${b.offsetTop - a.offsetTop}px`;
+  };
+  // the step crossing the middle of the screen is the one shown
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) set(els.indexOf(e.target)); }), { rootMargin: '-48% 0px -48% 0px' });
+    els.forEach(e => io.observe(e));
   }
-  function go(k, user) { i = (k + n) % n; place(); if (user) touched = Date.now(); arm(); }
-  function arm() {
-    clearTimeout(timer);
-    if (!RM && visible && !hover) timer = setTimeout(() => go(i + 1), Date.now() - touched < 12000 ? 9000 : 4200);
-  }
-  prev.onclick = () => go(i - 1, true); next.onclick = () => go(i + 1, true);
-  stage.addEventListener('keydown', e => { if (e.key === 'ArrowRight') go(i + 1, true); if (e.key === 'ArrowLeft') go(i - 1, true); });
-  host.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') { hover = true; arm(); } });
-  host.addEventListener('pointerleave', () => { hover = false; arm(); });
-  let x0 = null;
-  stage.addEventListener('pointerdown', e => { x0 = e.clientX; });
-  stage.addEventListener('pointerup', e => { if (x0 !== null && Math.abs(e.clientX - x0) > 40) go(i + (e.clientX < x0 ? 1 : -1), true); x0 = null; });
-  window.addEventListener('resize', place);
-  if ('IntersectionObserver' in window) new IntersectionObserver(es => { visible = es[0].isIntersecting; arm(); }, { threshold: .35 }).observe(stage);
-  else visible = true;
-  place();
+  set(0);
 })();
 
 /* first screen: the phone turns toward the cursor, the cards drift a little, the glare follows (fine pointers only) */
