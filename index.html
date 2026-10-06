@@ -327,7 +327,7 @@ h1 .bump path { fill: none; stroke: url(#none); stroke: var(--brand-2); stroke-w
 .stage .phone { transform: perspective(1400px) rotateY(-13deg) rotateX(4deg) rotateZ(1.2deg); justify-self: end; margin-right: 8%;
   box-shadow: 28px 38px 70px rgba(11, 18, 32, .26), -2px 0 0 1px #1d2840 inset; }
 .stage .phone::after { content: ""; position: absolute; inset: 9px; border-radius: 34px; pointer-events: none;
-  background: linear-gradient(115deg, rgba(255, 255, 255, .22), transparent 38%); }
+  background: radial-gradient(70% 45% at var(--gx, 28%) var(--gy, 14%), rgba(255, 255, 255, .26), transparent 70%); }
 .float.a { left: 0; right: auto; top: 12%; }
 .float.b { left: 0; right: auto; bottom: 5%; width: min(218px, 58vw); }
 @media (max-width: 920px) { .stage .phone { justify-self: center; margin-right: 0; } .float.a { left: 2%; } .float.b { left: auto; right: 2%; } }
@@ -344,6 +344,25 @@ h1 .bump path { fill: none; stroke: url(#none); stroke: var(--brand-2); stroke-w
 .card { transition: transform .25s ease, box-shadow .25s ease; }
 .lesson:hover, .finding:hover, .ship:hover, .next4 .card:hover { transform: translateY(-3px); box-shadow: 0 2px 4px rgba(16, 24, 40, .06), 0 20px 44px rgba(16, 24, 40, .11); }
 .shot .phone { transition: transform .4s cubic-bezier(.2, .8, .2, 1); }
+/* app screens: a 3D carousel. The chosen screen is big in the middle, the neighbours angled behind it; it turns by
+   itself, pauses on hover, and arrows, dots, swipe, keys or a click on any phone move it. */
+.cf { display: grid; gap: 14px; }
+.cfStage { position: relative; height: 520px; perspective: 1600px; overflow: hidden; outline: none; touch-action: pan-y; }
+.cfItem { position: absolute; left: 50%; top: 10px; width: 232px; margin: 0 0 0 -116px; cursor: pointer;
+  transition: transform .65s cubic-bezier(.2, .8, .2, 1), opacity .65s, filter .65s; will-change: transform; }
+.cfItem .phone { width: 232px; max-width: none; padding: 7px; border-radius: 34px; box-shadow: 0 16px 34px rgba(11, 18, 32, .2); }
+.cfItem .phone .screen { border-radius: 28px; }
+.cfItem:not(.on) { filter: saturate(.85) brightness(.97); }
+.cfItem.on { cursor: default; }
+.cfItem.on .phone { box-shadow: 0 34px 70px rgba(11, 18, 32, .32); }
+.cfCap { display: grid; justify-items: center; gap: 4px; text-align: center; min-height: 54px; }
+.cfCap b { font: 700 1.1rem var(--font-display); }
+.cfCap span { font-size: .88rem; color: var(--ink-2); max-width: 46ch; }
+.cfNav { display: flex; justify-content: center; align-items: center; gap: 12px; }
+.cfDots { display: flex; gap: 6px; align-items: center; }
+.cfDots button { width: 8px; height: 8px; padding: 0; border: 0; border-radius: 4px; background: #d0d5dd; cursor: pointer; transition: width .3s, background .3s; }
+.cfDots button.on { width: 22px; background: var(--brand); }
+@media (max-width: 560px) { .cfStage { height: 410px; } .cfItem { width: 180px; margin-left: -90px; } .cfItem .phone { width: 180px; } }
 .shot:hover .phone { transform: perspective(900px) rotateY(-9deg) rotateX(4deg) translateY(-8px); }
 @keyframes rise { from { opacity: .3; translate: 0 18px; } to { opacity: 1; translate: 0 0; } }
 @supports (animation-timeline: view()) { .reveal { animation: rise linear both; animation-timeline: view(); animation-range: entry 0% cover 14%; } }
@@ -1220,10 +1239,70 @@ $('appVer').textContent = 'version ' + L.app_version;
 // only screens that exist are shown (no placeholders on the public page)
 const SHOWN = SHOTS.filter(s => !s.missing);
 $('appLead').textContent = `Screens of app ${L.app_version} on a test phone, showing the shared map's real spots. Redesigned in 0.1.19.`;
-SHOWN.forEach(s => $('gallery').appendChild(H('figure', { class: 'shot' }, s.video
-  ? `<video class="demo" src="${s.src}" autoplay muted loop playsinline aria-label="${s.title}"></video><b>${s.title}</b><span>${s.caption}</span>`
-  : s.missing ? `<div class="phone"><div class="screen"><div class="ph">${svgIcon('camera', '#475467')}<b>${s.title}</b><span>${s.state}</span><em>Screenshot coming</em></div></div></div><b>${s.title}</b><span>${s.caption}</span>`
-  : `<div class="phone"><div class="screen"><img src="${s.src}" alt="${s.title} screen" loading="lazy"></div></div><b>${s.title}</b><span>${s.caption}</span>`)));
+(function coverflow() {
+  const host = $('gallery'), list = SHOWN.filter(s => !s.video), n = list.length;
+  if (!n) return;
+  host.className = 'cf'; host.setAttribute('aria-roledescription', 'carousel'); host.setAttribute('aria-label', 'Screens of the app');
+  const stage = H('div', { class: 'cfStage', tabindex: '0' }), cap = H('div', { class: 'cfCap', 'aria-live': 'polite' });
+  const dotsEl = H('div', { class: 'cfDots' }), prev = H('button', { class: 'carBtn', type: 'button', 'aria-label': 'Previous screen' }, '&#8249;'),
+    next = H('button', { class: 'carBtn', type: 'button', 'aria-label': 'Next screen' }, '&#8250;'), nav = H('div', { class: 'cfNav' });
+  const figs = list.map((s, k) => {
+    const f = H('figure', { class: 'cfItem', 'aria-label': s.title }, `<div class="phone"><div class="screen"><img src="${s.src}" alt="${s.title} screen of the app" loading="${k < 3 || k > n - 3 ? 'eager' : 'lazy'}"></div></div>`);
+    f.onclick = () => go(k, true); stage.appendChild(f);
+    const d = H('button', { type: 'button', 'aria-label': `Show ${s.title}` }); d.onclick = () => go(k, true); dotsEl.appendChild(d);
+    return f;
+  });
+  nav.append(prev, dotsEl, next); host.append(stage, cap, nav);
+  let i = 0, timer = null, hover = false, visible = false, touched = 0;
+  const step = () => Math.min(250, stage.clientWidth * .3);
+  function place() {
+    figs.forEach((f, k) => {
+      let d = k - i; if (d > n / 2) d -= n; if (d < -n / 2) d += n;  // wrap: neighbours on both sides
+      const a = Math.abs(d), show = a <= 2;
+      f.style.transform = `translateX(${d * step()}px) translateZ(${-a * 140}px) rotateY(${-Math.sign(d) * Math.min(a, 2) * 18}deg) scale(${1 - a * .1})`;
+      f.style.opacity = show ? [1, .8, .38][a] : 0; f.style.zIndex = String(10 - a); f.style.pointerEvents = show ? 'auto' : 'none';
+      f.classList.toggle('on', a === 0);
+    });
+    cap.innerHTML = `<b>${list[i].title}</b><span>${list[i].caption}</span>`;
+    [...dotsEl.children].forEach((d, k) => d.classList.toggle('on', k === i));
+  }
+  function go(k, user) { i = (k + n) % n; place(); if (user) touched = Date.now(); arm(); }
+  function arm() {
+    clearTimeout(timer);
+    if (!RM && visible && !hover) timer = setTimeout(() => go(i + 1), Date.now() - touched < 12000 ? 9000 : 4200);
+  }
+  prev.onclick = () => go(i - 1, true); next.onclick = () => go(i + 1, true);
+  stage.addEventListener('keydown', e => { if (e.key === 'ArrowRight') go(i + 1, true); if (e.key === 'ArrowLeft') go(i - 1, true); });
+  host.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') { hover = true; arm(); } });
+  host.addEventListener('pointerleave', () => { hover = false; arm(); });
+  let x0 = null;
+  stage.addEventListener('pointerdown', e => { x0 = e.clientX; });
+  stage.addEventListener('pointerup', e => { if (x0 !== null && Math.abs(e.clientX - x0) > 40) go(i + (e.clientX < x0 ? 1 : -1), true); x0 = null; });
+  window.addEventListener('resize', place);
+  if ('IntersectionObserver' in window) new IntersectionObserver(es => { visible = es[0].isIntersecting; arm(); }, { threshold: .35 }).observe(stage);
+  else visible = true;
+  place();
+})();
+
+/* first screen: the phone turns toward the cursor, the cards drift a little, the glare follows (fine pointers only) */
+(function heroTilt() {
+  const hero = document.querySelector('.hero'), phone = document.querySelector('.stage .phone');
+  const cards = [...document.querySelectorAll('.stage .float')];
+  if (RM || !hero || !phone || !matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+  let tx = 0, ty = 0, cx = 0, cy = 0, raf = 0;
+  hero.addEventListener('pointermove', e => {
+    const r = hero.getBoundingClientRect(); tx = (e.clientX - r.left) / r.width - .5; ty = (e.clientY - r.top) / r.height - .5;
+    if (!raf) raf = requestAnimationFrame(tick);
+  });
+  hero.addEventListener('pointerleave', () => { tx = 0; ty = 0; if (!raf) raf = requestAnimationFrame(tick); });
+  function tick() {
+    cx += (tx - cx) * .1; cy += (ty - cy) * .1;
+    phone.style.transform = `perspective(1400px) rotateY(${-13 + cx * 26}deg) rotateX(${4 - cy * 16}deg) rotateZ(${1.2 - cx * 2}deg)`;
+    phone.style.setProperty('--gx', `${28 + cx * 70}%`); phone.style.setProperty('--gy', `${14 + cy * 40}%`);
+    cards.forEach((c, k) => { const m = k ? 26 : 18; c.style.transform = `translate3d(${-cx * m}px, ${-cy * m * .7}px, 0)`; });
+    raf = Math.abs(tx - cx) > .001 || Math.abs(ty - cy) > .001 ? requestAnimationFrame(tick) : 0;
+  }
+})();
 
 /* raw data */
 (function raw() {
