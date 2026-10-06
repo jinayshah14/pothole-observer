@@ -4,4 +4,4 @@ Showcase of a camera-free pothole and speed-breaker detector: an Android app tha
 
 Live page: https://jinayshah14.github.io/pothole-observer/
 
-Data: field rides recorded on 3 October 2026. Map data © OpenStreetMap contributors.
+Data: field rides recorded on 3 October 2026. Map data © OpenStreetMap contributors · OpenMapTiles · OpenFreeMap.

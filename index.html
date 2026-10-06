@@ -282,6 +282,11 @@ footer { padding-block: 60px 50px; color: var(--ink-3); font-size: .8rem; displa
 /* live regions re-render while you read: never let the browser anchor scrolling to them */
 .player, .ticker, #pCount, .stages, #mapStats, #funnel, .mapwrap { overflow-anchor: none; }
 .mapbox { touch-action: pan-y; }
+.hint[hidden], .toast[hidden] { display: none; }
+.stat svg { width: 12px; height: 12px; flex: none; }
+.attrib a { color: inherit; text-decoration: none; }
+.attrib a:hover { text-decoration: underline; }
+@media (max-width: 600px) { .attrib { font-size: .58rem; left: 6px; bottom: 4px; padding: 1px 5px; white-space: nowrap; } }
 .hint { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(11, 18, 32, .5); color: #fff; font-weight: 700; font-size: .95rem; z-index: 5; pointer-events: none; text-align: center; padding: 20px; }
 .progress { position: fixed; top: 0; left: 0; height: 3px; width: 0; background: linear-gradient(90deg, var(--brand), var(--brand-2)); z-index: 60; }
 @keyframes floaty { 0%, 100% { translate: 0 0; } 50% { translate: 0 -9px; } }
@@ -383,7 +388,7 @@ canvas.seis { width: 100%; height: 76px; display: block; border-radius: 10px; ba
     <div class="head"><span class="kicker">Watch a ride</span><h2 id="pTitle">The 19:06 bike ride, replayed</h2><p class="muted" id="pSub">18 minutes in 30 seconds: the real route, the real reports, the real shaking.</p></div>
     <div class="card nolift player">
       <div class="ridepick" id="pRides" role="group" aria-label="Pick a ride"></div>
-      <div class="pmap" id="pmap"><svg id="pSvg" role="img" aria-label="Replay of the 19:06 bike ride on the map"></svg><div class="toast" id="toast" hidden></div></div>
+      <div class="pmap" id="pmap"><svg id="pSvg" role="img" aria-label="Replay of the 19:06 bike ride on the map"></svg><div class="toast" id="toast" hidden></div><div class="attrib">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors · <a href="https://openmaptiles.org/" target="_blank" rel="noopener">OpenMapTiles</a> · <a href="https://openfreemap.org/" target="_blank" rel="noopener">OpenFreeMap</a></div></div>
       <div class="pside">
         <div class="row" style="justify-content:space-between;align-items:end"><div><div class="tiny" style="font-weight:700">Time</div><div class="clock" id="pClock"></div></div><div style="text-align:right"><div class="tiny" style="font-weight:700">Speed</div><div class="clock" style="font-size:1.6rem" id="pSpeed"></div></div></div>
         <div class="pcount" id="pCount"></div>
@@ -477,7 +482,7 @@ canvas.seis { width: 100%; height: 76px; display: block; border-radius: 10px; ba
           <div class="mapbox" id="mapbox">
             <svg id="mapSvg" role="img" aria-label="Map of rides and bumps"></svg>
             <div class="zoom"><button type="button" id="zin" aria-label="Zoom in">+</button><button type="button" id="zout" aria-label="Zoom out">−</button><button type="button" id="zfit" aria-label="Fit all rides" style="font-size:.66rem">FIT</button></div>
-            <div class="attrib">Map data © OpenStreetMap contributors</div>
+            <div class="attrib">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors · <a href="https://openmaptiles.org/" target="_blank" rel="noopener">OpenMapTiles</a> · <a href="https://openfreemap.org/" target="_blank" rel="noopener">OpenFreeMap</a></div>
             <div class="tip" id="tip" hidden></div>
             <div class="hint" id="mapHint" hidden>Hold Ctrl (⌘ on Mac) and scroll to zoom the map, or use + and −</div>
           </div>
@@ -541,7 +546,7 @@ canvas.seis { width: 100%; height: 76px; display: block; border-radius: 10px; ba
 
   <footer>
     <div>Data as of 3 October 2026: one rider, one phone. Every report re-run with the shipped model (2026.10.03). Model facts from the shipped model file and its training log.</div>
-    <div>Map data © OpenStreetMap contributors.</div>
+    <div>Map data © OpenStreetMap contributors · OpenMapTiles · OpenFreeMap.</div>
   </footer>
 </main>
 
@@ -555,6 +560,10 @@ function S(tag, a = {}, parent, text) { const e = document.createElementNS(NS, t
 function H(tag, a = {}, html) { const e = document.createElement(tag); for (const k in a) e.setAttribute(k, a[k]); if (html !== undefined) e.innerHTML = html; return e; }
 const COL = { pothole: '#f05a28', speed_breaker: '#2e6bff', other_anomaly: '#12b886', normal: '#c5ccd8', non_road: '#667085', bike: '#7048e8', car: '#d08700', navy: '#14244a', brand: '#ff9f1c', brand2: '#ff5f2e', good: '#0e9f6e', line: '#e4e8f0', soft: '#eef1f7', ink: '#0b1220', ink2: '#475467', ink3: '#8a94a6', grey: '#c5ccd8' };
 const TYPES = { pothole: { name: 'Pothole', c: COL.pothole }, speed_breaker: { name: 'Speed breaker', c: COL.speed_breaker }, other_anomaly: { name: 'Type unsure', c: COL.other_anomaly } };
+/* map palette (research/maps_ui/03 §1.3) on the neutral POT Light basemap: hazard markers (pothole = high #A50E0E,
+   type unsure = medium #E8710A, speed breaker #5E35B1), slate routes (#2E3F5C bike, #6F86A6 car, #B8C7D9 detection
+   paused), Google blue for the highlighted route and the rider. Charts elsewhere keep TYPES / COL. */
+const MAPC = { pothole: '#A50E0E', speed_breaker: '#5E35B1', other_anomaly: '#E8710A', bike: '#2E3F5C', car: '#6F86A6', paused: '#B8C7D9', hot: '#1A73E8', rider: '#1A73E8' };
 const CLS = { pothole: 'Pothole', speed_breaker: 'Speed breaker', other_anomaly: 'Other bump', normal: 'Normal road', non_road: 'Not the road' };
 const ORDER = ['pothole', 'speed_breaker', 'other_anomaly', 'normal', 'non_road'];
 const VEHC = { two_wheeler: COL.bike, car: COL.car };
@@ -571,6 +580,7 @@ function shape(g, label, x, y, r, extra = {}) {
   return S('circle', Object.assign({ cx: x, cy: y, r }, a), g);
 }
 function icon(label) { const s = document.createElementNS(NS, 'svg'); s.setAttribute('viewBox', '0 0 14 14'); shape(s, label, 7, 7.5, 5.5, { stroke: 'none' }); return s; }
+function micon(label) { const s = icon(label); s.firstChild.setAttribute('fill', MAPC[label]); return s; }  // map-palette icon
 function seg(host, items, isOn, on) { host.innerHTML = ''; items.forEach(([v, label, ic]) => { const b = H('button', { type: 'button', 'aria-pressed': String(isOn(v)) }); if (ic) b.appendChild(ic()); b.appendChild(document.createTextNode(label)); b.onclick = () => on(v); host.appendChild(b); }); }
 function legend(host, items) { host.innerHTML = ''; items.forEach(([c, label, ic]) => { const s = H('span'); if (ic) s.appendChild(ic()); else s.innerHTML = `<svg viewBox="0 0 14 14"><rect width="14" height="14" rx="4" fill="${c}"/></svg>`; s.appendChild(document.createTextNode(' ' + label)); host.appendChild(s); }); }
 const typeLegend = h => legend(h, Object.keys(TYPES).map(k => [TYPES[k].c, TYPES[k].name, () => icon(k)]));
@@ -766,10 +776,10 @@ function zoomAt(f, cx, cy) { const v = MS.vb, nw = Math.min(BM.w * 1.6, Math.max
 function renderOverlay() {
   gRoutes.innerHTML = ''; gBumps.innerHTML = ''; const kk = kpx(), vr = visRides();
   for (const r of vr) {
-    const hot = MS.hot === r.id, dim = MS.hot && !hot, base = r.vehicle === 'car' ? COL.car : COL.navy; let seg2 = [], act = null;
+    const hot = MS.hot === r.id, dim = MS.hot && !hot, base = r.vehicle === 'car' ? MAPC.car : MAPC.bike; let seg2 = [], act = null;
     const flush = () => { if (seg2.length < 2) return; const d = seg2.map((p, i) => (i ? 'L' : 'M') + p[0] + ' ' + p[1]).join('');
       if (act) S('path', { d, fill: 'none', stroke: '#fff', 'stroke-width': (hot ? 11 : 8) * kk, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', opacity: dim ? .4 : 1 }, gRoutes);
-      const a2 = { d, fill: 'none', stroke: hot ? COL.brand2 : act ? base : '#9aa3b2', 'stroke-width': (hot ? 6 : act ? 4 : 2.5) * kk, 'stroke-dasharray': act ? '' : `${5 * kk} ${5 * kk}`, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', opacity: dim ? .3 : 1 };
+      const a2 = { d, fill: 'none', stroke: hot ? MAPC.hot : act ? base : MAPC.paused, 'stroke-width': (hot ? 6 : act ? 4 : 2.5) * kk, 'stroke-dasharray': act ? '' : `${5 * kk} ${5 * kk}`, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', opacity: dim ? .3 : 1 };
       if (MS.anim && act) Object.assign(a2, { pathLength: 1, class: 'draw', 'stroke-dasharray': 1, style: 'animation-duration:2.2s' });
       S('path', a2, gRoutes); };
     for (const p of r.pts) { const a = !!p[2]; if (act !== null && a !== act) { const last = seg2.at(-1); flush(); seg2 = [last]; } act = a; seg2.push([p[0], p[1]]); }
@@ -778,7 +788,7 @@ function renderOverlay() {
   const its = items().sort((a, b) => a.p - b.p), tip = $('tip');
   for (const it of its) {
     const rpx = MS.view === 'fused' ? 4 + 9 * it.p : 3.5 + 7 * Math.max(0, (it.p - .55) / .45);
-    const el = shape(gBumps, it.label, it.x, it.y, rpx * kk, { 'stroke-width': 1.6 * kk, opacity: MS.hot && it.ride && it.ride.id !== MS.hot ? .25 : 1 }); el.style.cursor = 'pointer';
+    const el = shape(gBumps, it.label, it.x, it.y, rpx * kk, { fill: MAPC[it.label], 'stroke-width': 1.6 * kk, opacity: MS.hot && it.ride && it.ride.id !== MS.hot ? .25 : 1 }); el.style.cursor = 'pointer';
     if (MS.anim) { el.classList.add('bpop'); el.style.animationDelay = (1200 + Math.min(1400, its.indexOf(it) * 6)) + 'ms'; }
     el.addEventListener('pointerenter', () => { tip.hidden = false;
       tip.innerHTML = MS.view === 'fused' ? `<b>${TYPES[it.label].name}</b> · ${pct(it.p)} confident<br>${it.b.hits} report(s) · ${it.b.misses} clean pass(es)<br>seen on ${it.b.rides.length} ride(s)` : `<b>${TYPES[it.label].name}</b> · model ${it.p.toFixed(2)} sure<br>${VEH(it.ride.vehicle)} ride ${tIST(it.ride.start)} · ${it.speed} km/h`;
@@ -789,13 +799,13 @@ function renderOverlay() {
   const km = vr.reduce((a, r) => a + r.km, 0), c = { pothole: 0, speed_breaker: 0, other_anomaly: 0 }; its.forEach(i => c[i.label]++);
   $('mapStats').innerHTML = [[vr.length, 'rides'], [km.toFixed(1), 'km'], [its.length, MS.view === 'fused' ? 'bumps' : 'reports'], [(its.length / Math.max(km, .1)).toFixed(1), 'per km']].map(([b, s]) => `<span class="stat"><b>${b}</b>${s}</span>`).join('')
     + Object.keys(TYPES).map(t => `<span class="stat" data-t="${t}"><b>${c[t]}</b>${TYPES[t].name.toLowerCase()}</span>`).join('');
-  document.querySelectorAll('#mapStats [data-t]').forEach(e => e.prepend(icon(e.dataset.t)));
+  document.querySelectorAll('#mapStats [data-t]').forEach(e => e.prepend(micon(e.dataset.t)));
 }
 function drawControls() {
   seg($('viewSeg'), [['fused', 'Shared map'], ['rides', 'Each ride']], v => v === MS.view, v => { MS.view = v; drawControls(); renderOverlay(); });
   seg($('vehSeg'), [['all', 'All'], ['two_wheeler', 'Bike'], ['car', 'Car']], v => v === MS.veh, v => { MS.veh = v; drawControls(); drawList(); fit(visRides()); });
-  seg($('typeSeg'), Object.keys(TYPES).map(t => [t, TYPES[t].name, () => icon(t)]), t => MS.types.has(t), t => { MS.types.has(t) ? MS.types.delete(t) : MS.types.add(t); drawControls(); renderOverlay(); });
-  legend($('mapLegend'), [...Object.keys(TYPES).map(t => [TYPES[t].c, TYPES[t].name, () => icon(t)]), [COL.navy, 'bike route'], [COL.car, 'car route'], ['#9aa3b2', 'detection paused']]);
+  seg($('typeSeg'), Object.keys(TYPES).map(t => [t, TYPES[t].name, () => micon(t)]), t => MS.types.has(t), t => { MS.types.has(t) ? MS.types.delete(t) : MS.types.add(t); drawControls(); renderOverlay(); });
+  legend($('mapLegend'), [...Object.keys(TYPES).map(t => [MAPC[t], TYPES[t].name, () => micon(t)]), [MAPC.bike, 'bike route'], [MAPC.car, 'car route'], [MAPC.paused, 'detection paused']]);
   $('mapLegend').appendChild(H('span', { class: 'tiny' }, MS.view === 'fused' ? 'size = confidence' : 'size = how sure the model was'));
 }
 function drawList() {
@@ -977,10 +987,10 @@ $('next4').innerHTML = [['Survey loops on local roads', 'Tap at each pothole and
     S('image', { href: 'assets/basemap.jpg', x: 0, y: 0, width: BMp.w, height: BMp.h, preserveAspectRatio: 'none' }, svg);
     const full = R.pts.map((p, i) => (i ? 'L' : 'M') + p[0] + ' ' + p[1]).join('');
     S('path', { d: full, fill: 'none', stroke: '#fff', 'stroke-width': 10 * k, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', opacity: .85 }, svg);
-    S('path', { d: full, fill: 'none', stroke: '#9aa3b2', 'stroke-width': 3 * k, 'stroke-dasharray': `${6 * k} ${6 * k}`, 'stroke-linecap': 'round' }, svg);
-    done = S('path', { fill: 'none', stroke: ride.vehicle === 'car' ? COL.car : COL.navy, 'stroke-width': 5.5 * k, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, svg);
+    S('path', { d: full, fill: 'none', stroke: MAPC.paused, 'stroke-width': 3 * k, 'stroke-dasharray': `${6 * k} ${6 * k}`, 'stroke-linecap': 'round' }, svg);
+    done = S('path', { fill: 'none', stroke: ride.vehicle === 'car' ? MAPC.car : MAPC.bike, 'stroke-width': 5.5 * k, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, svg);
     gD = S('g', {}, svg);
-    halo = S('circle', { r: 18 * k, fill: COL.brand2, opacity: .22 }, svg); rider = S('circle', { r: 8 * k, fill: COL.brand2, stroke: '#fff', 'stroke-width': 3 * k }, svg);
+    halo = S('circle', { r: 18 * k, fill: MAPC.rider, opacity: .2 }, svg); rider = S('circle', { r: 8 * k, fill: MAPC.rider, stroke: '#fff', 'stroke-width': 3 * k }, svg);
     vmax = Math.max(1, [...R.seis].sort((a, b) => a - b)[Math.floor(R.seis.length * .97)] * 1.15);
     pickers(); clear(); t = R.dur; render(false); fillTicker();
   }
@@ -996,11 +1006,11 @@ $('next4').innerHTML = [['Survey loops on local roads', 'Tap at each pothole and
     const a = P[i], b = P[i + 1] || a, f = b[3] > a[3] ? Math.min(1, Math.max(0, (tt - a[3]) / (b[3] - a[3]))) : 0;
     return { i, x: a[0] + (b[0] - a[0]) * f, y: a[1] + (b[1] - a[1]) * f, v: a[4] + (b[4] - a[4]) * f };
   }
-  function tickRow(d) { const row = H('div'); row.innerHTML = `<span class="mono">${clock(R.start + d[5] * 1000)}</span>`; row.appendChild(icon(d[2])); row.appendChild(H('b', {}, TYPES[d[2]].name)); row.appendChild(H('span', { class: 'mono' }, `${d[4]} km/h · ${d[3].toFixed(2)}`)); return row; }
+  function tickRow(d) { const row = H('div'); row.innerHTML = `<span class="mono">${clock(R.start + d[5] * 1000)}</span>`; row.appendChild(micon(d[2])); row.appendChild(H('b', {}, TYPES[d[2]].name)); row.appendChild(H('span', { class: 'mono' }, `${d[4]} km/h · ${d[3].toFixed(2)}`)); return row; }
   function counters(n) {
     const c = { pothole: 0, speed_breaker: 0, other_anomaly: 0 }; for (let j = 0; j < n; j++) c[R.dets[j][2]]++;
     $('pCount').innerHTML = Object.keys(TYPES).map(k2 => `<div><b>${c[k2]}</b><span data-t="${k2}">${TYPES[k2].name}</span></div>`).join('');
-    $('pCount').querySelectorAll('[data-t]').forEach(e => e.prepend(icon(e.dataset.t)));
+    $('pCount').querySelectorAll('[data-t]').forEach(e => e.prepend(micon(e.dataset.t)));
   }
   function render(animate) {
     const pos = at(t), P = R.pts;
@@ -1009,9 +1019,9 @@ $('next4').innerHTML = [['Survey loops on local roads', 'Tap at each pothole and
     let n = 0; while (n < R.dets.length && R.dets[n][5] <= t) n++;
     if (n < shown) clear();
     for (let j = shown; j < n; j++) {
-      const d = R.dets[j], el = shape(gD, d[2], d[0], d[1], (6 + 6 * Math.max(0, (d[3] - .7) / .3)) * k, { 'stroke-width': 2 * k });
+      const d = R.dets[j], el = shape(gD, d[2], d[0], d[1], (6 + 6 * Math.max(0, (d[3] - .7) / .3)) * k, { fill: MAPC[d[2]], 'stroke-width': 2 * k });
       if (animate) { el.classList.add('bpop'); const tk = $('ticker'); if (tk.firstElementChild && tk.firstElementChild.tagName === 'SPAN') tk.innerHTML = ''; tk.prepend(tickRow(d)); while (tk.children.length > 5) tk.lastChild.remove();
-        const to = $('toast'); to.hidden = false; to.innerHTML = ''; to.appendChild(icon(d[2])); to.appendChild(document.createTextNode(`${TYPES[d[2]].name} · ${Math.round(d[3] * 100)}% · beep`)); replay(to, 'x'); clearTimeout(toastT); toastT = setTimeout(() => { to.hidden = true; }, 1300); }
+        const to = $('toast'); to.hidden = false; to.innerHTML = ''; to.appendChild(micon(d[2])); to.appendChild(document.createTextNode(`${TYPES[d[2]].name} · ${Math.round(d[3] * 100)}% · beep`)); replay(to, 'x'); clearTimeout(toastT); toastT = setTimeout(() => { to.hidden = true; }, 1300); }
     }
     if (n !== shown || !animate) counters(n);
     shown = n;
@@ -1026,7 +1036,7 @@ $('next4').innerHTML = [['Survey loops on local roads', 'Tap at each pothole and
     const g = cv.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, Hh);
     const n = R.seis.length, bw = W / n, cut = t / R.dur * W;
     for (let i = 0; i < n; i++) { const v = Math.min(1, R.seis[i] / vmax), hh = Math.max(1, v * (Hh - 16)), x = i * bw; g.fillStyle = x <= cut ? COL.navy : '#c9d0dc'; g.fillRect(x, Hh - hh, Math.max(1, bw - .3), hh); }
-    R.dets.forEach(d => { const x = d[5] / R.dur * W; g.globalAlpha = d[5] <= t ? 1 : .3; g.fillStyle = TYPES[d[2]].c; g.beginPath(); g.arc(x, 6, 3.5, 0, 7); g.fill(); });
+    R.dets.forEach(d => { const x = d[5] / R.dur * W; g.globalAlpha = d[5] <= t ? 1 : .3; g.fillStyle = MAPC[d[2]]; g.beginPath(); g.arc(x, 6, 3.5, 0, 7); g.fill(); });
     g.globalAlpha = 1; g.fillStyle = COL.brand2; g.fillRect(cut - 1, 0, 2.5, Hh);
   }
   const btn = $('pPlay');
