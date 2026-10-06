@@ -334,7 +334,32 @@ svg.play .gy { transform-box: fill-box; transform-origin: center bottom; animati
 .pcount span { font-size: .72rem; font-weight: 700; color: var(--ink-2); display: flex; gap: 5px; align-items: center; }
 .pcount svg { width: 11px; height: 11px; }
 .toast svg, .ticker svg { width: 13px; height: 13px; flex: none; }
-.ridepick { grid-column: 1 / -1; display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 6px; scrollbar-width: thin; }
+/* the day's rides as one strip: each ride a bar at its real time and length (bike purple, car amber) */
+.ridepick { grid-column: 1 / -1; display: grid; gap: 8px; }
+.rpStrip { position: relative; height: 50px; border-radius: 12px; background: var(--soft); }
+.rpTick { position: absolute; bottom: 5px; transform: translateX(-50%); font: .64rem var(--font-mono); color: var(--ink-3); pointer-events: none; }
+.rpTick::before { content: ""; position: absolute; left: 50%; bottom: 14px; width: 1px; height: 26px; background: #dde3ec; }
+.rpRide { position: absolute; top: 9px; height: 18px; border: 0; border-radius: 6px; padding: 0; cursor: pointer; opacity: .72;
+  box-shadow: 0 0 0 1.5px var(--soft);  /* rides that touch stay two bars */
+  transition: transform .2s, opacity .2s, box-shadow .2s; }
+.rpRide:hover, .rpRide:focus-visible { opacity: 1; transform: scaleY(1.2); outline: none; }
+.rpRide[aria-pressed="true"] { opacity: 1; box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--brand-2); }
+.rpCap { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: .84rem; color: var(--ink-2); min-height: 22px; }
+.rpCap i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+.rpCap b { color: var(--ink); }
+.rpCap em { font: 700 .66rem var(--font-body); font-style: normal; text-transform: uppercase; letter-spacing: .06em; color: var(--brand-2); }
+.rpCap .rpDay { margin-left: auto; font: .72rem var(--font-mono); color: var(--ink-3); }
+.hud { position: absolute; left: 12px; top: 12px; display: flex; align-items: baseline; gap: 12px; padding: 8px 12px; border-radius: 12px;
+  background: rgba(255, 255, 255, .92); box-shadow: var(--shadow); backdrop-filter: blur(6px); pointer-events: none; }
+.hud .clock { font-size: 1.45rem; }
+.hudSp { font: 800 1rem var(--font-display); color: var(--brand-2); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pmap .toast { left: auto; right: 12px; translate: 0 0; animation-name: toastIn2; }
+@keyframes toastIn2 { from { opacity: 0; translate: 0 -10px; } }
+.seiswrap { position: relative; }
+.seisLbl { position: absolute; left: 10px; top: 6px; font: 700 .68rem var(--font-body); color: var(--ink-2); background: rgba(255, 255, 255, .78);
+  border-radius: 6px; padding: 1px 7px; pointer-events: none; }
+.pprog { margin-left: auto; }
+@media (max-width: 560px) { .hud .clock { font-size: 1.1rem; } .hud { padding: 6px 10px; gap: 8px; } .pprog { margin-left: 0; } }
 .ridepick button { flex: none; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0 8px; align-items: center; text-align: left; border: 1px solid var(--line); background: var(--card); border-radius: 12px; padding: 8px 12px 8px 8px; cursor: pointer; font: inherit; color: var(--ink); }
 .ridepick button i { grid-row: span 2; width: 8px; height: 30px; border-radius: 4px; }
 .ridepick button b { font-size: .86rem; } .ridepick button span { font: .72rem var(--font-mono); color: var(--ink-2); white-space: nowrap; }
@@ -745,14 +770,13 @@ canvas.seis { width: 100%; height: 76px; display: block; border-radius: 10px; ba
     <div class="head"><span class="kicker">Watch a ride · 3 October</span><h2 id="pTitle">The 19:06 bike ride, replayed</h2><p class="muted" id="pSub">18 minutes in 30 seconds: the real route, the real reports, the real shaking.</p><p class="tiny">From the first field day in Navsari, re-run with the detection model the app ships today (2026.10.03).</p></div>
     <div class="card nolift player">
       <div class="ridepick" id="pRides" role="group" aria-label="Pick a ride"></div>
-      <div class="pmap" id="pmap"><svg id="pSvg" role="img" aria-label="Replay of the 19:06 bike ride on the map"></svg><div class="toast" id="toast" hidden></div><div class="attrib">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors · <a href="https://openmaptiles.org/" target="_blank" rel="noopener">OpenMapTiles</a> · <a href="https://openfreemap.org/" target="_blank" rel="noopener">OpenFreeMap</a></div></div>
+      <div class="pmap" id="pmap"><svg id="pSvg" role="img" aria-label="Replay of the 19:06 bike ride on the map"></svg><div class="hud"><div class="clock" id="pClock"></div><div class="hudSp" id="pSpeed"></div></div><div class="toast" id="toast" hidden></div><div class="attrib">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors · <a href="https://openmaptiles.org/" target="_blank" rel="noopener">OpenMapTiles</a> · <a href="https://openfreemap.org/" target="_blank" rel="noopener">OpenFreeMap</a></div></div>
       <div class="pside">
-        <div class="row" style="justify-content:space-between;align-items:end"><div><div class="tiny" style="font-weight:700">Time</div><div class="clock" id="pClock"></div></div><div style="text-align:right"><div class="tiny" style="font-weight:700">Speed</div><div class="clock" style="font-size:1.6rem" id="pSpeed"></div></div></div>
         <div class="pcount" id="pCount"></div>
         <div><div class="tiny" style="font-weight:700;margin-bottom:6px">Latest reports</div><div class="ticker" id="ticker"></div></div>
       </div>
-      <div class="seiswrap"><div class="row" style="justify-content:space-between"><span class="tiny" style="font-weight:700">Up-and-down shaking over the whole ride (tap to jump)</span><span class="tiny" id="pProg"></span></div><canvas class="seis" id="seis"></canvas></div>
-      <div class="controls"><button class="playbtn" id="pPlay" type="button" aria-label="Play"></button><div class="seg" id="pSpeedSeg" role="group" aria-label="Playback speed"></div><button class="btn" id="pNext" type="button">Next ride →</button><span class="tiny">Each report pops up at the moment the phone made it.</span></div>
+      <div class="seiswrap"><canvas class="seis" id="seis"></canvas><span class="seisLbl">Shaking over the whole ride · tap to jump</span></div>
+      <div class="controls"><button class="playbtn" id="pPlay" type="button" aria-label="Play"></button><div class="seg" id="pSpeedSeg" role="group" aria-label="Playback speed"></div><button class="btn" id="pNext" type="button">Next ride →</button><span class="tiny pprog" id="pProg"></span></div>
     </div>
   </section>
 
@@ -1654,8 +1678,24 @@ $('footLive').textContent = `Live numbers from the cloud server, ${dayOf(L.asof)
   }
   function pickers() {
     const host = $('pRides'); host.innerHTML = '';
-    D.rides.forEach(r => { const b = H('button', { type: 'button', 'aria-pressed': String(r.id === cur) }, `<i style="background:${VEHC[r.vehicle]}"></i><b>${VEH(r.vehicle)} ${tIST(r.start)}</b><span>${r.km.toFixed(1)} km · ${(D.replays[r.id].dets || []).length} reports</span>`);
-      b.onclick = () => { playing = false; load(r.id); play(); }; host.appendChild(b); });
+    const HR = 3600000, end = r => r.start + r.mins * 60000;
+    const IST = 5.5 * HR;  // whole hours on the India clock (UTC+5:30), so the marks read 12:00, 14:00…
+    const t0 = Math.floor((Math.min(...D.rides.map(r => r.start)) + IST) / HR) * HR - IST, t1 = Math.ceil((Math.max(...D.rides.map(end)) + IST) / HR) * HR - IST;
+    const pct = ms => (ms - t0) / (t1 - t0) * 100;
+    const strip = H('div', { class: 'rpStrip' }), capEl = H('div', { class: 'rpCap' });
+    for (let h = t0 + HR; h < t1; h += HR) if ((h - t0) % (2 * HR) === 0 || t1 - t0 <= 6 * HR) strip.appendChild(H('span', { class: 'rpTick', style: `left:${pct(h)}%` }, tIST(h)));
+    const nOf = r => (D.replays[r.id].dets || []).length;
+    const cap = r => { capEl.innerHTML = `<i style="background:${VEHC[r.vehicle]}"></i><b>${VEH(r.vehicle)} ${tIST(r.start)}</b><span>${r.km.toFixed(1)} km · ${Math.round(r.mins)} min · ${nOf(r)} reports</span>${r.id === cur ? '<em>playing</em>' : '<em>click to watch</em>'}<span class="rpDay">${D.rides.length} rides that day</span>`; };
+    D.rides.forEach(r => {
+      const label = `${VEH(r.vehicle)} ${tIST(r.start)}: ${r.km.toFixed(1)} km, ${nOf(r)} reports`;
+      const b = H('button', { type: 'button', class: 'rpRide', 'aria-pressed': String(r.id === cur), 'aria-label': label, title: label,
+        style: `left:${pct(r.start)}%;width:max(12px, ${(r.mins * 60000) / (t1 - t0) * 100}%);background:${VEHC[r.vehicle]}` });
+      b.onclick = () => { playing = false; load(r.id); play(); };
+      b.onmouseenter = b.onfocus = () => cap(r);
+      b.onmouseleave = b.onblur = () => cap(ride);
+      strip.appendChild(b);
+    });
+    host.appendChild(strip); host.appendChild(capEl); cap(ride);
   }
   function clear() { gD.innerHTML = ''; shown = 0; $('ticker').innerHTML = ''; $('toast').hidden = true; }
   function fillTicker() { $('ticker').innerHTML = ''; R.dets.filter(d => d[5] <= t).slice(-5).reverse().forEach(d => $('ticker').appendChild(tickRow(d))); if (!$('ticker').children.length) $('ticker').innerHTML = '<span class="tiny">No reports yet</span>'; }
