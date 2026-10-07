@@ -626,6 +626,9 @@ td.n, th.n { text-align: right; font-family: var(--mono); font-variant-numeric: 
 
 /* ------------------------------------------------------------------ 05 how good is it (paper) */
 .acc-a { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: clamp(20px, 3vw, 44px); align-items: stretch; }
+.cwhy { margin: 8px 0 14px; max-width: 52ch; color: var(--ink-2); font-size: 16px; line-height: 1.45; }
+.ctake { margin: 4px 0 10px; font-weight: 650; font-size: 15.5px; } .ctake span { font-weight: 400; color: var(--ink-2); }
+.blatest { margin-top: 14px; font-size: 15px; color: var(--ink-2); } .blatest b { color: var(--ink); } .blatest a { color: var(--signal-ink); text-decoration: none; margin-left: 4px; } .blatest a:hover { text-decoration: underline; }
 .india { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px 22px; align-items: center; padding: clamp(18px, 2vw, 26px); border: 1.5px dashed var(--signal); border-radius: 4px; }
 .india svg { width: clamp(120px, 13vw, 168px); height: auto; grid-row: 1 / 4; }
 .india .z { font-weight: 790; font-stretch: 82%; font-size: clamp(64px, 7vw, 100px); line-height: .85; letter-spacing: -.05em; color: var(--signal); }
@@ -698,6 +701,7 @@ td.n, th.n { text-align: right; font-family: var(--mono); font-variant-numeric: 
 .bic { display: flex; flex-wrap: wrap; gap: 8px; }
 .bic li { display: inline-flex; align-items: center; gap: 8px; height: 34px; padding: 0 12px 0 8px; border: 1px solid var(--rule-2); border-radius: 17px; font-size: 14px; font-weight: 600; }
 .bic svg { width: 18px; height: 18px; color: var(--signal-ink); }
+@media (max-width: 600px) { .bic { gap: 6px; } .bic li { height: 30px; padding: 0 10px 0 7px; gap: 6px; font-size: 12.5px; } .bic svg { width: 15px; height: 15px; } }
 .pipe { position: relative; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 0; margin-bottom: 14px; }
 .pipe::before { content: ""; position: absolute; left: 0; right: 0; top: 27px; height: 1px; background: var(--rule-2); }
 .pipe .pkt { position: absolute; top: 25px; left: 0; width: 18px; height: 5px; background: var(--signal); opacity: 0; }
@@ -746,41 +750,13 @@ td.n, th.n { text-align: right; font-family: var(--mono); font-variant-numeric: 
 .shot button[aria-expanded="true"] i { transform: rotate(45deg); }
 .shot p { font-size: 14px; color: var(--ink-2); line-height: 1.45; }
 /* version ribbon */
-.vr { margin-top: clamp(48px, 6vw, 80px); }
-.vr-h { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; margin-bottom: 14px; }
-.rib { position: relative; display: grid; grid-template-columns: var(--cols); gap: 0; border-top: 1px solid var(--rule-2); padding-top: 4px; }
-.rib .day { position: relative; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); padding: 0 4px; border-left: 1px solid var(--rule); }
-.rib .day:first-child { border-left: 0; }
-.rib .day > span { position: absolute; left: 6px; bottom: -20px; font: 500 10.5px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); white-space: nowrap; }
-.rib button { height: 48px; border: 0; background: none; padding: 0; cursor: pointer; display: grid; place-items: center; min-width: 0; -webkit-tap-highlight-color: transparent; }
-.rib button i { width: 12px; height: 12px; border-radius: 50%; background: var(--ink); transition: transform .3s var(--spring), background .3s, opacity .3s; }
-.rib button.sm i { width: 8px; height: 8px; background: transparent; border: 1.5px solid var(--ink-2); }
-.rib button.th i { background: var(--signal); border-color: var(--signal); }
-.rib button.dimd i { opacity: .25; }
-.rib button[aria-pressed="true"] i { transform: scale(1.7); box-shadow: 0 0 0 3px var(--bg), 0 0 0 4px var(--signal); }
-.vr-b { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: clamp(18px, 3vw, 40px); margin-top: 34px; align-items: start; }
-.latest { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-.latest button { display: grid; gap: 4px; text-align: left; min-height: 64px; padding: 12px; border: 1px solid var(--rule); border-radius: 4px; background: var(--bg-2); cursor: pointer; }
-.latest button span { font: 600 12px var(--mono); color: var(--signal-ink); }
-.latest button b { font-size: 15px; line-height: 1.25; }
-.latest button[aria-pressed="true"] { border-color: var(--signal); background: var(--bg-3); }
-.vdet { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 16px; align-items: start; padding: 14px; border: 1px solid var(--rule); border-left: 2px solid var(--signal); border-radius: 4px; background: var(--bg-2); min-height: 150px; }
-.vdet .phm { aspect-ratio: 9 / 19.5; border-radius: 12px; padding: 3px; background: #050506; border: 1px solid var(--rule-2); overflow: hidden; }
-.vdet .phm img { width: 100%; height: 100%; object-fit: cover; object-position: top; border-radius: 9px; }
-.vdet .label { display: block; margin-bottom: 6px; }
-.vdet b { display: block; font-size: 17px; line-height: 1.25; }
-.vdet p { font-size: 14px; color: var(--ink-2); margin-top: 6px; }
-.themes { margin-top: 30px; }
-.thn { font-size: 14.5px; color: var(--ink-2); margin-top: 10px; min-height: 1.5em; max-width: 80ch; }
-@media (max-width: 900px) { .vr-b { grid-template-columns: minmax(0, 1fr); } }
-@media (max-width: 760px) { .latest { grid-template-columns: none; } .rib .day { padding: 0 1px; } .rib .day > span { font-size: 9.5px; } .rib button i { width: 9px; height: 9px; } .rib button.sm i { width: 7px; height: 7px; } .vdet { grid-template-columns: 84px minmax(0, 1fr); } }
 /* fix tiles */
 .fixes { margin-top: clamp(48px, 6vw, 80px); }
 .fx { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
 .fxt { position: relative; display: grid; gap: 6px; align-content: start; min-height: 112px; padding: 14px 16px; border: 1px solid var(--rule); border-radius: 4px; background: var(--bg-2); cursor: pointer; text-align: left; transition: border-color .3s, background .3s; }
 .fxt:hover { border-color: var(--ink-3); }
 .fxt .tg { font: 500 10.5px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
-.fxt .rs { font-weight: 760; font-stretch: 86%; font-size: clamp(24px, 2.4vw, 34px); line-height: 1; letter-spacing: -.025em; color: var(--signal-ink); }
+.fxt .rs { padding-right: 28px; font-weight: 760; font-stretch: 86%; font-size: clamp(24px, 2.4vw, 34px); line-height: 1; letter-spacing: -.025em; color: var(--signal-ink); }
 .fxt .pb { font-size: 14.5px; font-weight: 600; line-height: 1.25; }
 .fxt .pm { position: absolute; right: 12px; top: 12px; width: 22px; height: 22px; display: grid; place-items: center; border: 1px solid var(--rule-2); border-radius: 3px; font: 500 13px var(--mono); transition: transform .3s var(--ease); }
 .fxt[aria-expanded="true"] { border-color: var(--signal); background: var(--bg-3); }
@@ -1009,14 +985,14 @@ td.n, th.n { text-align: right; font-family: var(--mono); font-variant-numeric: 
   <div class="paper conf" id="conf">
     <div class="wrap">
       <div class="conf-h">
-        <div><h3 class="h3">Each ride makes a spot surer.</h3><div class="rule" id="cRule"></div></div>
+        <div><h3 class="h3">Each ride makes a spot surer.</h3><p class="cwhy">One bump can be a fluke. A spot is trusted only when different rides and phones agree.</p><div class="rule" id="cRule"></div></div>
         <div class="zero"><b id="cZero"></b><span>confirmed</span><span class="st nyt">Needs a 2nd phone</span></div>
       </div>
       <div class="tabs" role="tablist" aria-label="Confidence">
         <button type="button" role="tab" id="ctab0" aria-selected="true" aria-controls="cpan0">On the map today</button>
-        <button type="button" role="tab" id="ctab1" aria-selected="false" aria-controls="cpan1" tabindex="-1">Try the maths</button>
+        <button type="button" role="tab" id="ctab1" aria-selected="false" aria-controls="cpan1" tabindex="-1">Try it yourself</button>
       </div>
-      <div class="tpanel" id="cpan0" role="tabpanel" aria-labelledby="ctab0"><svg id="cGrow" role="img" aria-label="Confidence of every live spot, grouped by how many rides felt it"></svg></div>
+      <div class="tpanel" id="cpan0" role="tabpanel" aria-labelledby="ctab0"><p class="ctake">More rides, surer spots. <span>Each dot is one spot on the live map.</span></p><svg id="cGrow" role="img" aria-label="Confidence of every live spot, grouped by how many rides felt it"></svg></div>
       <div class="tpanel" id="cpan1" role="tabpanel" aria-labelledby="ctab1" hidden>
         <div class="bm">
           <div class="bm-meter"><svg id="bmSvg" viewBox="0 0 120 300" aria-hidden="true"></svg><b class="num" id="cNow" aria-live="polite"></b><span id="cStat"></span></div>
@@ -1178,27 +1154,22 @@ td.n, th.n { text-align: right; font-family: var(--mono); font-variant-numeric: 
       <div class="sh-k"><b>06</b>Built &amp; shipped</div>
       <h2 class="h2">Built, shipped, running.</h2>
       <div class="bstat"><b>23</b><span>versions in 3 days<small>0.1.8 → 0.1.30 · 5–7 Oct 2026</small></span><ul class="bic" id="bic"></ul></div>
+      <p class="blatest" id="blatest"></p>
     </header>
     <div class="pipe" id="pipe" role="group" aria-label="How a ride travels: tap a stop"><i class="pkt"></i><i class="pkt" style="animation-delay:-2.3s"></i><i class="pkt" style="animation-delay:-4.6s"></i></div>
     <div id="pcards"></div>
     <div class="film">
-      <div class="film-h"><span class="label" id="filmLabel"></span><div class="seg" id="filmSet" role="group" aria-label="Which screens"></div><span class="swc" id="filmCount"></span></div>
+      <div class="film-h"><span class="label" id="filmLabel"></span><span class="swc" id="filmCount"></span></div>
       <div class="film-track swipe" id="film" aria-label="Real screens of the app"></div>
     </div>
-    <div class="vr">
-      <div class="vr-h"><span class="label">23 versions · tap a dot</span><span class="label"><b>●</b> bigger · <b>○</b> smaller</span></div>
-      <div class="rib" id="rib"></div>
-      <div class="vr-b">
-        <div><span class="label" style="display:block;margin-bottom:10px">Latest 4</span><div class="latest swipe" id="latest"></div><span class="swc" id="latestCount"></span></div>
-        <div class="vdet" id="vdet" aria-live="polite"></div>
-      </div>
-      <div class="themes"><div class="seg" id="themes" role="group" aria-label="Follow one theme"></div><p class="thn" id="themeNote"></p></div>
-    </div>
+    <details class="dd" style="margin-top:28px"><summary><b>More app screens</b><span>5 screens · map spot, updates, phone health, settings, dark mode</span></summary>
+      <div class="dd-b"><div class="film-track swipe" id="film2" aria-label="More real screens of the app"></div></div>
+    </details>
     <div class="fixes">
       <div class="fun-h"><h3 class="h3">Fixed after field tests.</h3><span class="label">Tap a tile: cause and fix</span></div>
       <div class="fx" id="fx"></div>
     </div>
-    <details class="dd" style="margin-top:44px"><summary><b>Full changelog</b><span>23 versions · 17 entries</span></summary>
+    <details class="dd" id="ddLogWrap" style="margin-top:44px"><summary><b>Full changelog</b><span>23 versions · 17 entries</span></summary>
       <div class="dd-b" id="ddLog"></div>
     </details>
     <details class="dd"><summary><b>The 7 stops, word for word</b><span>gate v1.3 · free plans</span></summary>
@@ -2308,7 +2279,7 @@ const REL = [['7 Oct'],
   ['0.1.8–14', '"Are you on a road?" and trains', 'Suburban trains are not re-asked at stations; train legs continue through station crawls; a bump answered "road" needs a second phone to confirm; https-only server link.']];
 (function built() {
   const R = D.raw, total = R.files.reduce((a, f) => a + f[1], 0), th = MOD.thresholds, MB = (total / 1e6).toFixed(0);
-  $('bic').innerHTML = [['bell', 'Reminds you to ride'], ['cloud', 'Saves as you ride'], ['up', 'Updates itself']].map(([i, t]) => `<li>${svgIcon(i)}${t}</li>`).join('');
+  $('bic').innerHTML = [['bell', 'Reminds you, or starts by itself'], ['cloud', 'Saves as you ride'], ['up', 'Updates itself'], ['route', 'Routes follow the road'], ['shield', 'Private; confirmed by 2 phones']].map(([i, t]) => `<li>${svgIcon(i)}${t}</li>`).join('');
   const GATE = `<div class="gate-flow"><div class="gs"><span class="label">01 · Candidate</span><b>A new model</b></div><div class="gs"><span class="label">02 · Tests</span><b>Routes it never saw</b><div class="verdicts" id="verdicts"></div></div><div class="gs sign" id="gSign"><span class="label">03 · Sign-off</span><b>A named person approves</b></div><div class="gs" id="gShip"><span class="label">04 · Phones</span><b id="gShipT">Phones get it</b></div></div><p class="vtext" id="gText"></p>`;
   const STOPS = [
     ['phone', 'Phone', 'records & detects', `Android app · ${L.app_version}`, 'The phone does the detecting.', 'Live, during the ride. No camera: motion sensors and GPS only.', '<span class="chip">Map · Rides · You</span><span class="chip">No camera</span>'],
@@ -2367,11 +2338,9 @@ const REL = [['7 Oct'],
     const a = H('article', { class: 'shot', 'data-set': String(i < 5 ? 0 : 1) }, `<div class="sph"><img src="${A + byT[t].src}" alt="${t} screen of the app" loading="lazy" decoding="async" width="540" height="1170"></div><button type="button" aria-expanded="false"><b>${h}</b><i aria-hidden="true">+</i></button><p hidden><span class="k">${String(i + 1).padStart(2, '0')} · ${k}.</span> ${p}</p>`);
     const b = a.querySelector('button'), pp = a.querySelector('p'); b.onclick = () => { const o = b.getAttribute('aria-expanded') !== 'true'; b.setAttribute('aria-expanded', String(o)); pp.hidden = !o; };
     film.appendChild(a); });
-  let fset = 0;
-  const fcount = () => { const items = [...film.children].filter(c => !c.hidden); if (!items.length) return; const w = items[0].getBoundingClientRect().width + 12, i = clamp(Math.round(film.scrollLeft / Math.max(1, w)), 0, items.length - 1); $('filmCount').textContent = `${i + 1} / ${items.length}`; };
-  const drawSet = () => { seg($('filmSet'), [[0, `The ride · ${SETS[0].length}`], [1, `The app · ${SETS[1].length}`]], v => v === fset, v => { fset = v; drawSet(); });
-    [...film.children].forEach(c => { c.hidden = +c.dataset.set !== fset; }); film.scrollLeft = 0; fcount(); };
-  drawSet(); film.addEventListener('scroll', fcount, { passive: true });
+  const film2 = $('film2'); [...film.children].forEach(c => { if (c.dataset.set === '1') film2.appendChild(c); });
+  const fcount = () => { const items = [...film.children]; if (!items.length) return; const w = items[0].getBoundingClientRect().width + 12, i = clamp(Math.round(film.scrollLeft / Math.max(1, w)), 0, items.length - 1); $('filmCount').textContent = `${i + 1} / ${items.length}`; };
+  fcount(); film.addEventListener('scroll', fcount, { passive: true });
   // every version: 23 dots on the 5–7 Oct axis (0.1.8–14 drawn as its 7 versions), the latest 4, a detail with the screen
   const TH = {
     remind: ['Reminders & auto-start', 'Rings for 2 s, even on silent, when you are in a vehicle; Bluetooth can set it off; Instant mode starts by itself.',
@@ -2384,25 +2353,7 @@ const REL = [['7 Oct'],
   const RTH = { '0.1.30': 'remind', '0.1.29': 'remind', '0.1.28': 'trust', '0.1.27': 'remind', '0.1.26': 'trust', '0.1.25': 'trust', '0.1.24': 'remind', '0.1.23': 'update', '0.1.22': 'cloud', '0.1.21': 'update', '0.1.20': 'cloud', '0.1.18': 'route', '0.1.17': 'remind', '0.1.16': 'remind', '0.1.15': 'route', '0.1.8–14': 'trust' };
   const RSHOT = { '0.1.30': 'Travel reminder', '0.1.29': 'Travel reminder', '0.1.28': 'Tap a spot', '0.1.27': 'Travel reminder', '0.1.26': 'You', '0.1.25': 'You', '0.1.24': 'Travel reminder', '0.1.23': 'Updates itself', '0.1.22': 'Rides', '0.1.21': 'Updates itself', '0.1.20': 'Rides', '0.1.19': 'Map', '0.1.18': 'Ride summary', '0.1.17': 'Travel reminder', '0.1.16': 'Travel reminder', '0.1.15': 'Ride mode' };
   const items = []; let day = ''; REL.forEach(([v, t, d, hl]) => { if (t === undefined) day = v; else items.push({ v, t, d, hl, day }); });
-  const dots = []; items.slice().reverse().forEach(x => { if (x.v === '0.1.8–14') for (let n = 8; n <= 14; n++) dots.push({ ...x, one: `0.1.${n}`, grp: true }); else dots.push({ ...x, one: x.v }); });
-  const days = [...new Set(dots.map(d => d.day))], rib = $('rib');
-  rib.style.setProperty('--cols', days.map(dd => dots.filter(d => d.day === dd).length + 'fr').join(' '));
-  days.forEach(dd => { const col = H('div', { class: 'day' }); dots.filter(d => d.day === dd).forEach(d => { const b = H('button', { type: 'button', class: d.hl ? '' : 'sm', 'aria-pressed': 'false', 'aria-label': `${d.one} · ${d.t}`, title: `${d.one} · ${d.t}` }, '<i></i>'); b.onclick = () => select(d.v, d.one); d.el = b; col.appendChild(b); }); col.appendChild(H('span', {}, dd)); rib.appendChild(col); });
-  const latest = $('latest'); items.slice(0, 4).forEach(x => { const b = H('button', { type: 'button', 'aria-pressed': 'false' }, `<span>${x.v}</span><b>${x.t}</b>`); b.onclick = () => select(x.v); x.lb = b; latest.appendChild(b); });
-  const lcount = () => { const w = (latest.firstElementChild?.getBoundingClientRect().width || 1) + 12; $('latestCount').textContent = `${clamp(Math.round(latest.scrollLeft / w), 0, 3) + 1} / 4`; };
-  latest.addEventListener('scroll', lcount, { passive: true }); lcount();
-  function select(v, one, quiet) { const x = items.find(y => y.v === v);
-    dots.forEach(d => d.el.setAttribute('aria-pressed', String(d.v === v && (!one || d.one === one))));
-    items.slice(0, 4).forEach(y => y.lb.setAttribute('aria-pressed', String(y === x)));
-    const t = RSHOT[x.v], img = t && byT[t] ? `<div class="phm"><img src="${A + byT[t].src}" alt="${t} screen of the app" loading="lazy" decoding="async"></div>` : '<div></div>';
-    $('vdet').innerHTML = `${img}<div><span class="label">${one && one !== x.v ? one + ' (' + x.v + ')' : x.v} · ${x.day}</span><b>${x.t}</b><p${quiet ? ' hidden' : ''}>${x.d}</p></div>`; }
-  select('0.1.30', undefined, true);
-  let TSEL = 'all';
-  const SHORT = { remind: 'Reminders', cloud: 'Saving', update: 'Updates', route: 'Routes', trust: 'Privacy' };
-  const drawThemes = () => { seg($('themes'), [['all', 'All'], ...Object.keys(TH).map(k2 => [k2, SHORT[k2]])], v => v === TSEL, v => { TSEL = v; drawThemes(); });
-    dots.forEach(d => { const on = TSEL !== 'all' && RTH[d.v] === TSEL; d.el.classList.toggle('th', on); d.el.classList.toggle('dimd', TSEL !== 'all' && !on); });
-    $('themeNote').innerHTML = TSEL === 'all' ? '' : `<b>${TH[TSEL][0]}.</b> ${TH[TSEL][1]}`; };
-  drawThemes();
+  $('blatest').innerHTML = `<span class="label">Latest</span> <b>${items[0].v}</b> · ${items[0].t} · ${items[0].day}. <a href="#ddLogWrap">Every version, in the full changelog ↓</a>`;
   // the full changelog of v1, word for word (drawer)
   let lastDay = '', html = `<p>23 updates since 0.1.7, shipped from 5 to 7 October 2026. The app reminds you to ride (or starts by itself), saves every ride as it happens, and keeps itself up to date.</p><p>${items.length} entries, newest first: 0.1.8–14 is one entry for seven versions. Filled marks are the bigger releases.</p>`;
   items.forEach(x => { if (x.day !== lastDay) { html += (lastDay ? '</ul>' : '') + `<h4>${x.day} 2026</h4><ul class="dl">`; lastDay = x.day; }
