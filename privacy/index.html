@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy policy · Pothole Observer</title>
+<meta name="description" content="What the Pothole Observer app records, what it shares, how long it is kept, and your choices.">
+<style>
+:root{--bg:#ffffff;--fg:#202124;--muted:#5f6368;--line:#dadce0;--accent:#0b57d0;--soft:#f1f3f4}
+@media (prefers-color-scheme:dark){:root{--bg:#131314;--fg:#e3e3e3;--muted:#bdc1c6;--line:#444746;--accent:#8ab4f8;--soft:#1f2023}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans",sans-serif}
+main{max-width:760px;margin:0 auto;padding:32px 16px 64px}
+a{color:var(--accent)}
+h1{font-size:30px;line-height:1.25;margin:0 0 6px}
+h2{font-size:20px;margin:36px 0 8px;padding-top:4px}
+p,li{margin:0 0 10px}
+ul{padding-left:22px;margin:0 0 10px}
+.meta{color:var(--muted);margin:0 0 24px}
+.box{background:var(--soft);border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin:20px 0}
+.box p:last-child{margin:0}
+nav.top{font-size:14px;margin-bottom:24px}
+footer{border-top:1px solid var(--line);margin-top:48px;padding-top:16px;color:var(--muted);font-size:14px}
+</style>
+</head>
+<body>
+<main>
+<nav class="top"><a href="../">← Pothole Observer</a></nav>
+<h1>Privacy policy</h1>
+<p class="meta">Pothole Observer (POT) Android app and server · effective 9 October 2026 · app notice version 2026-10-g</p>
+
+<div class="box">
+<p><b>In short.</b> While a trip is recording, POT uses your phone's motion sensors and location to find suspected
+potholes and speed breakers. Rides are kept on your phone and, if sharing is on, on the POT server, where they build
+a shared pothole map. Other riders see only pothole points, never names or routes. Signing in with Google is optional.
+POT never uses your camera, microphone or contacts. Nothing is sold and there are no ads.</p>
+</div>
+
+<h2>Who runs POT</h2>
+<p>Pothole Observer is a test project run from <a href="https://github.com/jinayshah14/pothole-observer">github.com/jinayshah14/pothole-observer</a>.
+It is a prototype: it does not measure how deep a pothole is, and it cannot feel holes your wheels never cross.</p>
+
+<h2>What the app records, and when</h2>
+<p>Only while a trip is recording (a notification shows the whole time):</p>
+<ul>
+<li>the motion sensors: acceleration, rotation and related sensors;</li>
+<li>your location and speed;</li>
+<li>the phone model and Android version;</li>
+<li>a random install id made by the app (not your phone's serial number, IMEI or advertising id);</li>
+<li>the bumps you review and the choices you make in the app.</li>
+</ul>
+
+<h2>What is never collected</h2>
+<p>Camera, microphone, contacts and your phone number. The app has no permission to use the camera or microphone.
+POT never sees your Google password.</p>
+
+<h2>Signing in with Google (optional)</h2>
+<p>Recording, sharing and the map all work without an account. If you choose to sign in, Google gives POT your name,
+your email address, a Google account number and a link to your profile photo.</p>
+<ul>
+<li>POT keeps your <b>name, email address and Google account number</b> in its account database, separately from
+rides. It does not keep your photo or its link.</li>
+<li>They are used only to sign you in, to keep your rides together when you change phones or reinstall, to show you
+your own rides, and to write to you about your account, a data breach or a request you made.</li>
+<li>No newsletters, no ads, never sold. Other riders never see your name or email.</li>
+<li>Signing in links your phone to your account. The rides it has sent, and the ones it sends later, are added to your
+account. Only you, and the people who run the POT server, can see your account's rides.</li>
+</ul>
+
+<h2>What is shared, and with whom</h2>
+<ul>
+<li><b>Sent to the POT server</b> when sharing is on, about once a minute while you ride: bump points (place, type and
+how sure the phone was), the route with its first and last 200 m cut off (those never leave the phone), the vehicle
+type, the phone model, the random install id and your choices.</li>
+<li><b>Other riders</b> see only the suspected spots on the shared map, as points: no names, no routes.</li>
+<li><b>The people who run the POT server</b> can see shared routes and accounts, to check the map and fix problems.</li>
+<li><b>Service providers</b> that store or carry the data for POT:
+  <ul>
+  <li>Render (server, Singapore);</li>
+  <li>Neon (database);</li>
+  <li>Hugging Face (private backup of full recordings);</li>
+  <li>Google (sign-in, only if you use it);</li>
+  <li>GitHub (this website).</li>
+  </ul>
+  The map in the app and on this site loads map images from OpenFreeMap, which sees your internet address and the map
+  area you look at.</li>
+</ul>
+
+<h2>Features that are off until you turn them on</h2>
+<ul>
+<li><b>Travel reminders:</b> they use Android's "Physical activity" signal while POT is closed, and may sample motion for
+up to 2.5 minutes to check for road travel. No location is used until a trip starts.</li>
+<li><b>Instant mode:</b> it uses your location in the background (Android's "Allow all the time"), so it can start
+recording by itself when you leave a place where your rides often start or end, or when the phone moves at vehicle
+speed. A start that turns out not to be a vehicle stays on the phone, is never sent, and is cleared after 30 days.</li>
+<li><b>Improve detection with my rides:</b> it lets your reviewed rides be used to improve the detector.</li>
+<li><b>Test-version extras:</b> live position about once a minute while a trip records, and a full recording of each
+ride (all motion sensors and the whole route, including its start and end). These are for testers, and you can see and
+turn them off in the app under You › Your data.</li>
+</ul>
+
+<h2>How long data is kept</h2>
+<ul>
+<li><b>Rides</b> are kept on your phone and, once shared, on the POT server, where they keep building the map. POT does
+not delete shared rides.</li>
+<li><b>Account details</b> (name, email, Google account number) are kept until you close your account.</li>
+<li><b>Closing your account</b> (in the app: You › Account) removes your name, email, Google account number and the link
+between your account and your phones, and signs you out on every phone. Your rides are kept on the server under the
+phone's random install id, with no name or email, and pothole points already on the map stay. The phone then starts a
+fresh random id.</li>
+</ul>
+
+<h2>Your choices and requests</h2>
+<ul>
+<li>In the app, under You › Your data, you can stop sending rides, turn off live position and full recordings, turn
+reminders and model improvement on or off, and see a dated history of every choice.</li>
+<li>You can sign out, or close your account, at any time in You › Account.</li>
+<li>To ask for a copy of your data, a correction, or anything else about your data, contact us (below). We reply
+within 30 days.</li>
+</ul>
+
+<h2>Security</h2>
+<p>Data travels over HTTPS. Each phone proves itself to the server with its own secret. Sign-in sessions are stored only
+as one-way hashes, and account details are kept apart from rides and are not part of the ride backup.</p>
+
+<h2>Age</h2>
+<p>Recording rides and signing in are only for people aged 18 or older. Anyone can look at the pothole map.</p>
+
+<h2>Changes to this policy</h2>
+<p>When what POT collects or shares changes, this page and the in-app notice are updated, and the app shows the
+change before you continue.</p>
+
+<h2>Contact</h2>
+<p>Questions or requests about your data: open an issue at
+<a href="https://github.com/jinayshah14/pothole-observer/issues">github.com/jinayshah14/pothole-observer/issues</a>.
+Please don't post personal details there; ask for a private reply, and we'll get in touch.</p>
+
+<footer>Pothole Observer · <a href="../">Home</a></footer>
+</main>
+</body>
+</html>
