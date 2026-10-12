@@ -1152,7 +1152,7 @@ td.n, th.n { text-align: right; font-family: var(--mono); font-variant-numeric: 
     <header class="sh">
       <div class="sh-k"><b>06</b>Built &amp; shipped</div>
       <h2 class="h2">Built, shipped, running.</h2>
-      <div class="bstat"><b>23</b><span>versions in 3 days<small>0.1.8 → 0.1.30 · 5–7 Oct 2026</small></span><ul class="bic" id="bic"></ul></div>
+      <div class="bstat"><b>27</b><span>versions in 8 days<small>0.1.8 → 0.1.34 · 5–12 Oct 2026</small></span><ul class="bic" id="bic"></ul></div>
       <p class="blatest" id="blatest"></p>
     </header>
     <div class="pipe" id="pipe" role="group" aria-label="How a ride travels: tap a stop"><i class="pkt"></i><i class="pkt" style="animation-delay:-2.3s"></i><i class="pkt" style="animation-delay:-4.6s"></i></div>
@@ -1168,7 +1168,7 @@ td.n, th.n { text-align: right; font-family: var(--mono); font-variant-numeric: 
       <div class="fun-h"><h3 class="h3">Fixed after field tests.</h3><span class="label">Tap a tile: cause and fix</span></div>
       <div class="fx" id="fx"></div>
     </div>
-    <details class="dd" id="ddLogWrap" style="margin-top:44px"><summary><b>Full changelog</b><span>23 versions · 17 entries</span></summary>
+    <details class="dd" id="ddLogWrap" style="margin-top:44px"><summary><b>Full changelog</b><span>27 versions · 21 entries</span></summary>
       <div class="dd-b" id="ddLog"></div>
     </details>
     <details class="dd"><summary><b>The 7 stops, word for word</b><span>gate v1.3 · free plans</span></summary>
@@ -1873,7 +1873,7 @@ const VCOL = { two_wheeler: '#E2DBCD', car: '#8C8579' };
 
 /* ------------------------------------------------------------------ 03 · confidence: the server's arithmetic for one spot
    (prior 15%, per-vehicle hit rate and false-alert rate within 15 m). From app 0.1.28 a spot is confirmed only when two
-   phones have felt it. The live strip shows every spot on the server; the bead meter lets the reader try the maths. */
+   phones have felt it; from 0.1.33, while only one phone rides, hits on 3 separate days also confirm it. The live strip shows every spot on the server; the bead meter lets the reader try the maths. */
 const RF = { two_wheeler: { name: 'Bike', pothole: .22, speed_breaker: .45, other_anomaly: .12, lam: 3.0 }, car: { name: 'Car', pothole: .50, speed_breaker: .50, other_anomaly: .375, lam: 2.2 },
   auto_rickshaw: { name: 'Auto', pothole: .35, speed_breaker: .55, other_anomaly: .20, lam: 4.0 }, bus_truck: { name: 'Bus / truck', pothole: .15, speed_breaker: .50, other_anomaly: .15, lam: 4.0 } };
 const PRIOR = .15, R0 = 15, logit = p => Math.log(p / (1 - p)), sigm = x => 1 / (1 + Math.exp(-x));
@@ -1881,7 +1881,7 @@ const fpOf = m => 1 - Math.exp(-m.lam * 2 * R0 / 1000);
 const reportStep = (m, type, conf) => Math.log(1 + conf * (m[type] / fpOf(m) - 1));
 (function confidence() {
   const phonesSvg = '<span class="ph2" aria-hidden="true"><svg viewBox="0 0 12 16"><rect x="1" y="1" width="10" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/></svg><svg viewBox="0 0 12 16"><rect x="1" y="1" width="10" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></span>';
-  $('cRule').innerHTML = `Confirmed = ≥ 90% · 2+ rides · ${phonesSvg} 2 phones <em>· app 0.1.28+</em>`;
+  $('cRule').innerHTML = `Confirmed = ≥ 90% · 2+ rides · ${phonesSvg} 2 phones <em>· or 3 separate days while one phone rides (0.1.33+)</em>`;
   $('cZero').textContent = LT.confirmed;
   // tabs: On the map today | Try the maths
   const tabs = [$('ctab0'), $('ctab1')], pans = [$('cpan0'), $('cpan1')];
@@ -1944,7 +1944,9 @@ const reportStep = (m, type, conf) => Math.log(1 + conf * (m[type] / fpOf(m) - 1
     });
   }
   $('cLiveSub').textContent = `All ${fmt(LT.spots)} suspected spots on the server, ${dayOf(L.asof)}. The orange line is each group's average: ${C.map(c => `${plural(c.spots, 'spot')} felt on ${plural(c.rides, 'ride')}, average ${pct(c.mean)}`).join('; ')}.`;
-  $('cNote').innerHTML = `<b>Nothing is confirmed yet (${LT.confirmed} confirmed).</b> A spot is confirmed at 90% from two or more rides, and from app 0.1.28 on, only when two phones have felt it. The closest is at ${pct(top.max)} after ${top.rides} rides. With ${LT.phones === 1 ? 'one phone' : LT.phones + ' phones'} so far, a second phone on the same roads is the next big step.`;
+  const RULE = 'A spot is confirmed at 90% from two or more rides, when two phones have felt it, or, while only one phone rides, on 3 separate days (from 0.1.33).';
+  $('cNote').innerHTML = LT.confirmed ? `<b>${plural(LT.confirmed, 'spot')} confirmed.</b> ${RULE} With ${LT.phones === 1 ? 'one phone' : LT.phones + ' phones'} so far, a second phone on the same roads is the next big step.`
+    : `<b>Nothing is confirmed yet.</b> ${RULE} The closest is at ${pct(top.max)} after ${top.rides} rides. With ${LT.phones === 1 ? 'one phone' : LT.phones + ' phones'} so far, a second phone on the same roads is the next big step.`;
   grow(false); onView(svg, () => grow(true), .2);
   onResizeW(() => { if (svg.childNodes.length) grow(); });
 })();
@@ -2256,7 +2258,14 @@ function sigChart(svg, ex, mode, sgx) {  // one jolt, four processing stages, th
 
 /* ------------------------------------------------------------------ 06 · built & shipped: the 7-stop pipeline (release gate
    inside "Model updates"), the real screens, every version on a ribbon, 9 fixes as tiles */
-const REL = [['7 Oct'],
+const REL = [['12 Oct'],
+  ['0.1.34', 'Instant mode that works', 'Walks and a phone lying at home no longer set it off; a real ride starts recording within 2 minutes, and trains are let go. Plus a short cartoon film at start-up.', 1],
+  ['10 Oct'],
+  ['0.1.33', 'Mark spots while riding', 'Survey buttons for 9 road features and a Bluetooth remote that marks a spot without touching the phone. While one rider is on the map, a spot felt on 3 separate days can be confirmed. Far less server data.', 1],
+  ['9 Oct'],
+  ['0.1.32', '"AI learning" screen', 'You › AI learning shows each weekly cloud training run and what it did with your rides.', 1],
+  ['7 Oct'],
+  ['0.1.31', 'Every ride cross-checked', 'Each ride is compared with your other rides on the same road by itself: the kilometres in common, and which spots were felt again.', 1],
   ['0.1.30', 'Instant mode, safer', 'An automatic start must feel a road, not a train, and a start it rejects still gets a reminder.', 1],
   ['0.1.29', 'Instant mode', 'Optional: starts recording by itself when you leave home or work, or move at vehicle speed. Starts that are not a ride are never sent.', 1],
   ['0.1.28', 'How sure is a spot?', '"Likely pothole · felt on 2 of 3 passes", what would confirm it, and a ride-vs-ride comparison. Confirmed needs two phones.', 1],
@@ -2276,12 +2285,13 @@ const REL = [['7 Oct'],
   ['0.1.15', 'Google-Maps-style map', 'Light style, a blue dot that follows, markers and a bottom sheet. The web dashboard got the same map.'],
   ['5 Oct'],
   ['0.1.8–14', '"Are you on a road?" and trains', 'Suburban trains are not re-asked at stations; train legs continue through station crawls; a bump answered "road" needs a second phone to confirm; https-only server link.']];
+const LATEST_APP = REL.find(r => r.length > 1)[0];  // the newest released version (live.json's app_version is as of its export)
 (function built() {
   const R = D.raw, total = R.files.reduce((a, f) => a + f[1], 0), th = MOD.thresholds, MB = (total / 1e6).toFixed(0);
-  $('bic').innerHTML = [['bell', 'Reminds you, or starts by itself'], ['cloud', 'Saves as you ride'], ['up', 'Updates itself'], ['route', 'Routes follow the road'], ['shield', 'Private; confirmed by 2 phones']].map(([i, t]) => `<li>${svgIcon(i)}${t}</li>`).join('');
+  $('bic').innerHTML = [['bell', 'Reminds you, or starts by itself'], ['cloud', 'Saves as you ride'], ['up', 'Updates itself'], ['route', 'Routes follow the road'], ['shield', 'Private; confirmed by 2 phones or 3 days']].map(([i, t]) => `<li>${svgIcon(i)}${t}</li>`).join('');
   const GATE = `<div class="gate-flow"><div class="gs"><span class="label">01 · Candidate</span><b>A new model</b></div><div class="gs"><span class="label">02 · Tests</span><b>Routes it never saw</b><div class="verdicts" id="verdicts"></div></div><div class="gs sign" id="gSign"><span class="label">03 · Sign-off</span><b>A named person approves</b></div><div class="gs" id="gShip"><span class="label">04 · Phones</span><b id="gShipT">Phones get it</b></div></div><p class="vtext" id="gText"></p>`;
   const STOPS = [
-    ['phone', 'Phone', 'records & detects', `Android app · ${L.app_version}`, 'The phone does the detecting.', 'Live, during the ride. No camera: motion sensors and GPS only.', '<span class="chip">Map · Rides · You</span><span class="chip">No camera</span>'],
+    ['phone', 'Phone', 'records & detects', `Android app · ${LATEST_APP}`, 'The phone does the detecting.', 'Live, during the ride. No camera: motion sensors and GPS only.', '<span class="chip">Map · Rides · You</span><span class="chip">No camera</span>'],
     ['wave', 'Sensors', 'motion + GPS', R.device, 'Four motion sensors and GPS.', `One ${R.mins}-minute ride: ${R.files.length} files, ${MB} MB.`, '<a class="pc-go" href="#model">Raw data lab ↑</a>'],
     ['tree', 'Detection', `model ${MOD.version}`, `model ${MOD.version}`, 'Two small forests, the same on phone and server.', 'Every jolt worth a look is measured, then voted on.', '<a class="pc-go" href="#model">Inside the model ↑</a>'],
     ['route', 'Ride', 'saved as you ride', 'saved about every minute', 'A ride is never lost.', 'Saved to the cloud about every minute, so a dead phone or a crash loses nothing.', '<span class="chip">Failed uploads retry</span><span class="chip">“Saved to cloud”</span>'],
@@ -2307,12 +2317,12 @@ const REL = [['7 Oct'],
   drawV();
   // the 7 stops of v1, word for word (drawer)
   const STOPS1 = [
-    ['Phone', `Android app · version ${L.app_version}`, 'The phone does the detecting.', 'Feels bumps live during the ride and saves the ride as it goes. No camera: motion sensors and GPS only.', ['Map · Rides · You, with a ride mode', 'Reminds you to start, or starts by itself with optional Instant mode', 'Updates itself, never mid-ride']],
+    ['Phone', `Android app · version ${LATEST_APP}`, 'The phone does the detecting.', 'Feels bumps live during the ride and saves the ride as it goes. No camera: motion sensors and GPS only.', ['Map · Rides · You, with a ride mode', 'Reminds you to start, or starts by itself with optional Instant mode', 'Updates itself, never mid-ride']],
     ['Sensors', R.device, 'Four motion sensors and GPS.', `One ${R.mins}-minute ride: ${R.files.length} files, ${MB} MB.`, [`Accelerometer ${R.sensors.accelerometer}, ${R.rate} readings a second requested`, `Gyroscope ${R.sensors.gyroscope}`, `Gravity and magnetometer (${R.sensors.magnetometer})`]],
     ['Detection', `model ${MOD.version}`, 'Two small forests, the same on phone and server.', `Every jolt worth a look becomes ${MOD.features} measurements; ${MOD.trees} trees decide whether it is a road defect and ${MOD.type_trees} more decide which kind.`, [`${MOD.features} measurements per bump`, 'Type shown only when 60% sure', `Bar to report: bike ${th.two_wheeler.toFixed(2)} · car ${th.car.toFixed(2)} · auto and bus ${th.three_wheeler.toFixed(2)}`, '3,676 training bumps, public datasets']],
     ['Ride', 'saved about every minute', 'A ride is never lost.', 'Sent in pieces about every minute while you ride, so a dead phone or a crash loses nothing.', ['Failed uploads retry by themselves', 'Every ride shows "Saved to cloud"', 'The route follows the road: GPS jumps dropped, stops held, gaps split', 'The first and last 200 m stay private']],
     ['Cloud', 'cloud server · free plan', 'One server merges every ride.', 'Rides arrive with the laptop switched off.', ['Re-checks rides with the shipped model', 'Rides arrive in one-minute pieces', 'Storage: rides, spots, recordings', 'Serves the app and its updates']],
-    ['Map', 'shared map · live', `${fmt(LT.spots)} suspected spots, ${LT.confirmed} confirmed.`, 'Every ride is merged into one map; each ride over a spot makes it surer, each clean pass less sure.', ['Size = confidence: every spot starts as a suspicion', 'Confirmed: 90%, two rides, two phones (app 0.1.28+)', 'On this page, routes are trimmed 500 m at both ends', 'Website: map, dashboard, this page']],
+    ['Map', 'shared map · live', `${fmt(LT.spots)} suspected spots, ${LT.confirmed} confirmed.`, 'Every ride is merged into one map; each ride over a spot makes it surer, each clean pass less sure.', ['Size = confidence: every spot starts as a suspicion', 'Confirmed: 90%, two rides, and two phones, or 3 separate days while one phone rides (0.1.33+)', 'On this page, routes are trimmed 500 m at both ends', 'Website: map, dashboard, this page']],
     ['Model updates', 'release gate v1.3', 'No new model ships without passing tests.', 'A candidate model is tested on routes it never saw, and a named person signs off before phones get it.', ['Tested on routes it never saw', 'Flags any group that got worse', 'Verdict: PROMOTE, REJECT or INCONCLUSIVE', 'A named person approves']]];
   $('ddStops').innerHTML = STOPS1.map(([t, k, h, p, li], i) => `<p><b>${String(i + 1).padStart(2, '0')} · ${t} · ${k}. ${h}</b> ${p}</p><ul class="dl">${li.map(x => `<li>${x}</li>`).join('')}</ul>`).join('') +
     `<h4>All on free cloud plans</h4><p>Rides arrive with the laptop switched off: the server, the storage and the website all run on free plans. The phone does the detecting; the server merges, re-checks and serves.</p>
@@ -2325,7 +2335,7 @@ const REL = [['7 Oct'],
     'Ride mode': ['On the road', 'Ride, and it feels the bumps', 'Keep the phone in its holder. A blue dot follows you, GPS speed shows, and every pothole is felt and noted live.'],
     'Ride summary': ['Arrived', 'See what the ride found', 'The route framed on the map, with the kilometres, the minutes and every bump. The first and last 200 m stay private.'],
     'Rides': ['Behind the scenes', 'Saved to the cloud as you ride', 'A piece of the ride goes up about every minute, so a dead phone loses nothing. Every ride shows its cloud badge.'],
-    'Tap a spot': ['The shared map', 'Every ride makes the map surer', 'Tap a spot: "Likely pothole · felt on 2 of 3 passes", and what would confirm it. A second rider turns it Confirmed.'],
+    'Tap a spot': ['The shared map', 'Every ride makes the map surer', 'Tap a spot: "Likely pothole · felt on 2 of 3 passes", and what would confirm it. Felt on 3 separate days, or by a second rider, it turns Confirmed.'],
     'Updates itself': ['Always current', 'It keeps itself up to date', 'New versions download and install over the app in the background: fingerprint-checked, never during a ride.'],
     'Phone health': ['Your phone', 'Phone health', 'Which sensors the phone has, and how well it detects.'],
     'You': ['Settings', 'You', 'Vehicles, reminders, privacy and your data.'],
@@ -2343,18 +2353,19 @@ const REL = [['7 Oct'],
   // every version: 23 dots on the 5–7 Oct axis (0.1.8–14 drawn as its 7 versions), the latest 4, a detail with the screen
   const TH = {
     remind: ['Reminders & auto-start', 'Rings for 2 s, even on silent, when you are in a vehicle; Bluetooth can set it off; Instant mode starts by itself.',
-      'The phone notices it is in a vehicle and checks the road for a moment. If you are not recording, it rings for 2 seconds, even on silent; a car kit, scooter or helmet connecting over Bluetooth can set it off too. Optional Instant mode (0.1.29) starts recording by itself, and from 0.1.30 an automatic start must feel a road, not a train.'],
+      'The phone notices it is in a vehicle and checks the road for a moment. If you are not recording, it rings for 2 seconds, even on silent; a car kit, scooter or helmet connecting over Bluetooth can set it off too. Optional Instant mode (0.1.29) starts recording by itself; from 0.1.30 an automatic start must feel a road, not a train, and from 0.1.34 walks and a phone lying at home are ignored and a real ride is confirmed within 2 minutes.'],
     cloud: ['Saved as you ride', 'Rides upload while you ride; failed uploads retry by themselves.', 'A ride is sent in pieces about every minute while you ride, so a dead phone or a crash loses nothing. Failed uploads retry by themselves, and the Rides tab shows "Saved to cloud".'],
     update: ['Updates itself', 'Downloads, checks its fingerprint, installs over the old app. Never during a ride.', 'A new version downloads in the background, is checked against its fingerprint, and installs over the old app. Never during a ride.'],
     route: ['Route drawing', 'GPS jumps dropped, stops held, gaps kept open, corners kept.', 'GPS jumps are dropped, stops no longer leave a star of dots, gaps stay open instead of becoming straight lines, and corners are kept. On the owner’s replayed rides, the wander at stops fell from 267 m to 20 m over 69 stops.'],
-    trust: ['Privacy & confidence', 'Each phone has its own secret; only the owner edits; Confirmed needs two phones.', 'Each phone has its own secret, so riders see only their own rides, and only the owner can change or hide spots and rides. A spot says how sure it is and what would confirm it; Confirmed needs two phones.'],
+    trust: ['Privacy & confidence', 'Each phone has its own secret; only the owner edits; Confirmed needs 2 phones or 3 separate days.', 'Each phone has its own secret, so riders see only their own rides, and only the owner can change or hide spots and rides. A spot says how sure it is and what would confirm it; Confirmed needs two phones, or, while only one phone rides, hits on 3 separate days (0.1.33).'],
+    learn: ['Cross-checks & learning', 'Every ride is cross-checked; a training screen; a remote marks spots.', 'Every ride is compared with the rider’s other rides on the same road (0.1.31). You › AI learning shows what each weekly cloud training run did with the rides (0.1.32). Survey buttons and a Bluetooth remote mark spots without touching the phone (0.1.33).'],
   };
-  const RTH = { '0.1.30': 'remind', '0.1.29': 'remind', '0.1.28': 'trust', '0.1.27': 'remind', '0.1.26': 'trust', '0.1.25': 'trust', '0.1.24': 'remind', '0.1.23': 'update', '0.1.22': 'cloud', '0.1.21': 'update', '0.1.20': 'cloud', '0.1.18': 'route', '0.1.17': 'remind', '0.1.16': 'remind', '0.1.15': 'route', '0.1.8–14': 'trust' };
-  const RSHOT = { '0.1.30': 'Travel reminder', '0.1.29': 'Travel reminder', '0.1.28': 'Tap a spot', '0.1.27': 'Travel reminder', '0.1.26': 'You', '0.1.25': 'You', '0.1.24': 'Travel reminder', '0.1.23': 'Updates itself', '0.1.22': 'Rides', '0.1.21': 'Updates itself', '0.1.20': 'Rides', '0.1.19': 'Map', '0.1.18': 'Ride summary', '0.1.17': 'Travel reminder', '0.1.16': 'Travel reminder', '0.1.15': 'Ride mode' };
+  const RTH = { '0.1.34': 'remind', '0.1.33': 'learn', '0.1.32': 'learn', '0.1.31': 'learn', '0.1.30': 'remind', '0.1.29': 'remind', '0.1.28': 'trust', '0.1.27': 'remind', '0.1.26': 'trust', '0.1.25': 'trust', '0.1.24': 'remind', '0.1.23': 'update', '0.1.22': 'cloud', '0.1.21': 'update', '0.1.20': 'cloud', '0.1.18': 'route', '0.1.17': 'remind', '0.1.16': 'remind', '0.1.15': 'route', '0.1.8–14': 'trust' };
+  const RSHOT = { '0.1.34': 'Travel reminder', '0.1.30': 'Travel reminder', '0.1.29': 'Travel reminder', '0.1.28': 'Tap a spot', '0.1.27': 'Travel reminder', '0.1.26': 'You', '0.1.25': 'You', '0.1.24': 'Travel reminder', '0.1.23': 'Updates itself', '0.1.22': 'Rides', '0.1.21': 'Updates itself', '0.1.20': 'Rides', '0.1.19': 'Map', '0.1.18': 'Ride summary', '0.1.17': 'Travel reminder', '0.1.16': 'Travel reminder', '0.1.15': 'Ride mode' };
   const items = []; let day = ''; REL.forEach(([v, t, d, hl]) => { if (t === undefined) day = v; else items.push({ v, t, d, hl, day }); });
   $('blatest').innerHTML = `<span class="label">Latest</span> <b>${items[0].v}</b> · ${items[0].t} · ${items[0].day}. <a href="#ddLogWrap">Every version, in the full changelog ↓</a>`;
   // the full changelog of v1, word for word (drawer)
-  let lastDay = '', html = `<p>23 updates since 0.1.7, shipped from 5 to 7 October 2026. The app reminds you to ride (or starts by itself), saves every ride as it happens, and keeps itself up to date.</p><p>${items.length} entries, newest first: 0.1.8–14 is one entry for seven versions. Filled marks are the bigger releases.</p>`;
+  let lastDay = '', html = `<p>27 updates since 0.1.7, shipped from 5 to 12 October 2026. The app reminds you to ride (or starts by itself), saves every ride as it happens, cross-checks it against your other rides, and keeps itself up to date.</p><p>${items.length} entries, newest first: 0.1.8–14 is one entry for seven versions. Filled marks are the bigger releases.</p>`;
   items.forEach(x => { if (x.day !== lastDay) { html += (lastDay ? '</ul>' : '') + `<h4>${x.day} 2026</h4><ul class="dl">`; lastDay = x.day; }
     html += `<li><b>${x.v} · ${x.t}.</b> ${x.d}${RSHOT[x.v] ? ` <span class="label">Screen: ${RSHOT[x.v]}</span>` : ''}${x.hl ? ' <span class="label">· bigger release</span>' : ''}</li>`; });
   html += '</ul><h4>Themes</h4><ul class="dl">' + Object.entries(TH).map(([k2, [t, , full]]) => `<li><b>${t} · ${plural(items.filter(x => RTH[x.v] === k2).length, 'entry', 'entries')}.</b> ${full}</li>`).join('') + '</ul>';
@@ -2394,13 +2405,13 @@ const REL = [['7 Oct'],
   $('nKm').textContent = LT.km.toFixed(1) + ' km';
   const names = Object.values(REG).map(r => r.name);
   $('nKmT').textContent = `${LT.km.toFixed(1)} km of road measured so far, by ${LT.phones === 1 ? 'one phone' : LT.phones + ' phones'} in ${names.length === 2 ? names.join(' and ') : names.join(', ')}. Behind them: the ${R.name} street network, almost all of it still unmeasured.`;
-  const NX = [['Survey local spots', '60–100 spots', 'Check the 60–100 local spots where the detectors disagree most, then grow them into a labelled set for the first Indian accuracy numbers. Labelled rides on local roads come first: to measure the model here, then to train it.'],
-    ['Retrain with the fixed recipe', '21% → 53% offline', 'Offline it lifts bumps found from 21% to 53% at the same false-alert rate. It ships only through the gate.'],
-    ['More phones on the same roads', 'a 2nd rider', 'A second rider cross-checks spots. Fixed phones on buses or garbage trucks would pass the same roads every day.'],
-    ['Alerts inside map apps', 'tested silently', 'Hazard-ahead alerts are being tested silently and go live only once their precision is measured.']];
+  const NX = [['Mark spots while riding', 'first Indian labels', 'Press a Bluetooth remote at a pothole, then say what it was after the ride. Alerts stay silent while marking, so a mark is what the rider felt. A mark that agrees on two rides becomes a surveyed spot: the first Indian truth, to measure the model here, then to train it (so far every new model was stopped at the release gate).'],
+    ['Phone in the holder, or not?', 'built · next version', 'A check of 51 rides found the phone in a pocket for over half the riding time, while every ride said "mounted". Next, each ride checks it by itself, so pocket stretches stop teaching the model.'],
+    ['Smarter map scoring', '3 → 9 confirmed in a test', 'Measured on 32 rides: a random stretch of road gets a bump on about 21% of passes by luck. A map score tuned to that confirms 9 spots instead of 3, all of them spots that keep coming back. It runs side by side with the live map first.'],
+    ['More phones on the same roads', 'a 2nd rider', 'A second rider cross-checks spots. Fixed phones on buses or garbage trucks would pass the same roads every day.']];
   $('nNext').innerHTML = NX.map(([t, c, d], i) => `<button type="button" class="ncard" aria-expanded="false"><em>${String(i + 1).padStart(2, '0')}</em><b>${t}</b><span class="chip" style="justify-self:start">${c}</span><span class="nd" hidden>${d}</span></button>`).join('');
   $('nNext').addEventListener('click', e => { const b = e.target.closest('.ncard'); if (!b) return; const o = b.getAttribute('aria-expanded') !== 'true'; b.setAttribute('aria-expanded', String(o)); b.querySelector('.nd').hidden = !o; });
-  const nn = $('nNext'), ncount = () => { const w2 = (nn.firstElementChild?.getBoundingClientRect().width || 1) + 12; $('nCount').textContent = `${clamp(Math.round(nn.scrollLeft / w2), 0, 3) + 1} / 4`; };
+  const nn = $('nNext'), ncount = () => { const w2 = (nn.firstElementChild?.getBoundingClientRect().width || 1) + 12; $('nCount').textContent = `${clamp(Math.round(nn.scrollLeft / w2), 0, NX.length - 1) + 1} / ${NX.length}`; };
   nn.addEventListener('scroll', ncount, { passive: true }); ncount();
   const MB2 = [['City-scale road intelligence', 'Many phones, or fixed units on vehicles that already drive every street, could keep a whole city’s map fresh.'],
     ['Stronger Indian validation', 'Surveyed local spots, grown over months, could give accuracy numbers per city, vehicle and road type.'],
