@@ -2228,12 +2228,12 @@ function sigChart(svg, ex, mode, sgx) {  // one jolt, four processing stages, th
     term.querySelectorAll('.ln.r').forEach(e => e.classList.toggle('on', e.dataset.k === k && +e.dataset.i === i));
     const dt = prev ? ((row[0] - prev[0]) / 1e6).toFixed(2) + ' ms' : '–';
     if (k === 'a') { const n = Math.hypot(row[1], row[2], row[3]), tl = Math.acos(row[3] / n) * 57.2958;
-      insp.innerHTML = `<div><span class="label">x</span><b>${sgn(row[1])}</b></div><div><span class="label">y</span><b>${row[2].toFixed(2)}</b></div><div><span class="label">z</span><b>${row[3].toFixed(2)}</b></div><div><span class="label">|a| <span class="nc">m/s²</span></span><b>${n.toFixed(2)}</b></div>
-        <div><span class="label">Δt</span><b>${dt}</b></div><div><span class="label">tilt</span><b>≈ ${tl.toFixed(0)}°</b></div><div style="grid-column:span 2"><span class="label">t · ns since boot</span><b>${head[i + 1].split(',')[0]}</b></div>
+      insp.innerHTML = `<div><span class="label">x</span><b>${sgn(row[1])}</b></div><div><span class="label">y</span><b>${row[2].toFixed(2)}</b></div><div><span class="label">z</span><b>${row[3].toFixed(2)}</b></div><div><span class="label nc">|a| m/s²</span><b>${n.toFixed(2)}</b></div>
+        <div><span class="label nc">Δt</span><b>${dt}</b></div><div><span class="label">tilt</span><b>≈ ${tl.toFixed(0)}°</b></div><div style="grid-column:span 2"><span class="label nc">t · ns since boot</span><b>${head[i + 1].split(',')[0]}</b></div>
         <div class="wide"><span>|a| ≈ 9.8 m/s² is mostly gravity: the phone sits about ${tl.toFixed(0)}° from flat in its holder. Removing gravity leaves only what the road does.</span></div>`; }
     else { const w = [row[1], row[2], row[3]].map(v => v * 57.2958), n = Math.hypot(...w);
       insp.innerHTML = `<div><span class="label">x °/s</span><b>${sgn(w[0])}</b></div><div><span class="label">y °/s</span><b>${sgn(w[1])}</b></div><div><span class="label">z °/s</span><b>${sgn(w[2])}</b></div><div><span class="label">|ω| °/s</span><b>${n.toFixed(1)}</b></div>
-        <div><span class="label">Δt</span><b>${dt}</b></div><div style="grid-column:span 3"><span class="label">t · ns since boot</span><b>${head[i + 1].split(',')[0]}</b></div>
+        <div><span class="label nc">Δt</span><b>${dt}</b></div><div style="grid-column:span 3"><span class="label nc">t · ns since boot</span><b>${head[i + 1].split(',')[0]}</b></div>
         <div class="wide"><span>Rotation rate, recorded in rad/s and shown here in °/s. The model uses its peaks and averages: the fastest phone tilt, the average tilt rate and the turning rate.</span></div>`; }
   };
   term.addEventListener('click', e => { const l = e.target.closest('.ln.r'); if (l) inspect(l.dataset.k, +l.dataset.i); });
