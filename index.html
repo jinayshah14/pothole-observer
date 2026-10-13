@@ -615,6 +615,8 @@ td.n, th.n { text-align: right; font-family: var(--mono); font-variant-numeric: 
 .file .fs { font: 500 12px var(--mono); color: var(--ink); text-align: right; white-space: nowrap; }
 .fdet { margin-top: 14px; padding: 12px 14px; border: 1px solid var(--rule); border-left: 2px solid var(--signal); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; background: var(--bg-3); }
 .fdet div { display: grid; gap: 3px; } .fdet b { font: 600 15px var(--mono); }
+.fdet .fw { grid-column: 1 / -1; } .fdet .fw span:last-child { font-size: 14px; line-height: 1.45; color: var(--ink-2); }
+.fkey { margin-top: 16px; display: grid; gap: 8px; font-size: 14px; line-height: 1.45; color: var(--ink-2); } .fkey p { margin: 0; } .fkey b { color: var(--ink); } .fkey .fk-end { padding-top: 8px; border-top: 1px solid var(--rule); }
 .term { background: #08090A; border: 1px solid var(--rule); border-radius: 3px; padding: 12px 0; font: 400 12.5px/1.7 var(--mono); color: #CFC9BD; overflow-x: auto; }
 .term .ln { display: block; padding: 0 14px; white-space: pre; }
 .term .ln.r { cursor: pointer; }
@@ -901,16 +903,12 @@ td.n, th.n { text-align: right; font-family: var(--mono); font-variant-numeric: 
         <div class="fun-h"><h3 class="h3">One ride, from readings to map.</h3><span class="label">19:06 ride · log scale</span></div>
         <div class="funnel" id="funnel"></div>
       </div>
-      <details class="dd" style="margin-top:40px"><summary><b>How it works, word for word</b><span>8 steps · the chain · 4 signal stages</span></summary>
+      <details class="dd" style="margin-top:40px"><summary><b>How it works, word for word</b><span>the chain · the scooter scene</span></summary>
         <div class="dd-b" id="ddHow">
           <p>A pothole jolts every vehicle that crosses it, and the moment is gone as soon as the wheel rolls on. Nobody writes down where it was, how hard it hit, or whether it is still there tomorrow. Pothole Observer keeps that moment. Scroll to ride over two real bumps.</p>
           <h4>The chain</h4>
           <ul class="dl"><li><b>Road:</b> A pothole, a speed breaker</li><li><b>Vibration:</b> The wheel drops, the frame shakes</li><li><b>Phone:</b> The phone in its holder feels it</li><li><b>Detection:</b> The app decides what it was</li><li><b>Location:</b> GPS pins where it happened</li><li><b>Shared map:</b> Every ride adds to one map</li></ul>
           <p>Your phone already feels the road. Pothole Observer teaches it what that feeling means. No camera and no extra hardware: the motion sensors almost every Android phone carries, a little signal processing, and two small forests of decision trees that run on the phone during the ride.</p>
-          <h4>The 8 steps · from motion to meaning, one real jolt of the 19:06 bike ride</h4>
-          <ul class="dl" id="ddSteps"></ul>
-          <h4>Signal stages, rebuilt from the raw ride</h4>
-          <ul class="dl"><li><b>Raw readings · a = (x, y, z):</b> Accelerometer, in the phone's own axes. Gravity is in there too.</li><li><b>Gravity removed · a · ĝ − |g|:</b> Projected onto gravity, then gravity taken away: up-and-down motion only.</li><li><b>Filtered · 0.5–20 Hz:</b> How these charts draw it: what the road feels like, without slow tilts.</li><li><b>Triggered · sharp ≥ max(1.5, 3.5 σ), or slow ≥ max(1.2, 3.5 σ):</b> The sharp part, or the slow rise and fall, crosses the trigger line (this ride: 3.5 × the road's usual shaking σ): a candidate.</li></ul>
           <h4>The scooter scene, line by line</h4>
           <ul class="dl" id="ddScene"></ul>
         </div>
@@ -1070,7 +1068,7 @@ td.n, th.n { text-align: right; font-family: var(--mono); font-variant-numeric: 
       <div class="dd-b" style="padding-left:0">
         <p id="labLead"></p>
         <div class="lab-grid">
-          <div class="panel"><div class="fun-h" style="margin-bottom:12px"><span class="label">Files of the 19:06 ride · click one</span><span class="label" id="fTot"></span></div><div class="files" id="files"></div><div class="fdet" id="fDet"></div></div>
+          <div class="panel"><div class="fun-h" style="margin-bottom:12px"><span class="label">Files of the 19:06 ride · click one</span><span class="label" id="fTot"></span></div><div class="files" id="files"></div><div class="fdet" id="fDet"></div><div class="fkey" id="fKey"></div></div>
           <div class="panel"><div class="fun-h" style="margin-bottom:12px"><span class="label">The first readings, as recorded · click a row</span></div><div class="term" id="term"></div><div class="insp" id="tInsp"></div><div class="schips" id="sChips"></div></div>
         </div>
       </div>
@@ -1679,18 +1677,6 @@ const SCENE = ex => [null, `The wheel ${ex.label === 'pothole' ? 'drops into the
   $('funnel').innerHTML = F.map(([n, v], i) => `<div class="fstep"><div class="fbar" data-w="${(24 + 76 * (lv[i] - mn) / (mx - mn)).toFixed(1)}" style="width:${(24 + 76 * (lv[i] - mn) / (mx - mn)).toFixed(1)}%"><b>${fmt(v)}</b></div><span>${n}<em>${notes[i]}</em></span></div>`).join('');
   if (!RM) onView($('funnel'), () => { const bars = [...document.querySelectorAll('#funnel .fbar')]; bars.forEach(b => { b.style.transition = 'none'; b.style.width = '128px'; });
     requestAnimationFrame(() => requestAnimationFrame(() => bars.forEach((b, i) => { b.style.transition = `width 1.2s cubic-bezier(.2,.8,.2,1) ${i * 200}ms`; b.style.width = b.dataset.w + '%'; }))); }, .4);
-  // the 8 steps of v1, word for word (drawer)
-  const th = MOD.thresholds;
-  $('ddSteps').innerHTML = [
-    ['01 · Accelerometer · It feels every push.', 'The phone measures how it is pushed along its own three axes. While a ride records, the app asks for 200 readings a second; the detector smooths them to 50 a second.', `x · y · z, m/s² · 200 / s requested · 50 / s checked · ${R.sensors.accelerometer}`],
-    ['02 · Gyroscope · It knows when it is being handled.', 'The rotation rate shows when the phone is picked up or tipped hard. Detection pauses for a moment then; in a car, also while the holder shakes.', `rotation rate, rad/s · ${R.sensors.gyroscope}`],
-    ['03 · Gravity removal · It ignores how the phone is mounted.', 'Smoothing the readings shows which way is down. Each reading is projected onto gravity and gravity is taken away, so only the up-and-down motion is left, however the phone sits in its holder.', 'a_vertical = a · ĝ − |g|'],
-    ['04 · Vertical motion · The road, as a signal.', 'That up-and-down signal is what the road feels like (drawn on this page band-passed to 0.5–20 Hz). A pothole is a sharp dip and impact; a speed breaker is a slower, bigger heave.', 'app: sharp > 1 Hz, slow 0.5–3 Hz · drawn 0.5–20 Hz'],
-    ['05 · Candidate · A jolt worth a look.', 'A jolt becomes a candidate when its sharp part, or its slow rise and fall, crosses a trigger line that follows the road\'s usual shaking of the last 10 seconds or so (on this bike ride: 3.5 times it, never below 1.5 m/s²). It only starts while moving at about 9 km/h or more with a fresh GPS fix.', `trigger = max(1.5, 3.5 σ) · ${fmt(F[1][1])} candidates on the 19:06 ride, as the phone logged them`],
-    ['06 · Classification · 120 trees vote.', 'The jolt, its speed and the road just before it become 50 measurements. 120 decision trees vote: is this a road defect? A bike needs 0.90 to report it, a car 0.70.', `${MOD.features} measurements · ${MOD.trees} trees · bike ≥ ${th.two_wheeler.toFixed(2)} · car ≥ ${th.car.toFixed(2)}`],
-    ['07 · Pothole or speed breaker · 100 more decide which kind.', 'A second forest only separates potholes from speed breakers. The type is shown only when it is at least 60% sure and the first 120 trees did not already call it another kind of bump; otherwise the map says "type unsure" instead of guessing.', '100 trees · type shown ≥ 60%'],
-    ['08 · Location · A dot on a shared map.', 'The report is pinned to the GPS position and speed, saved with the ride, sent to the cloud about every minute, and merged with every other ride into one shared map.', 'GPS + speed · saved every ~1 min · one shared map']]
-    .map(([t, p, c]) => `<li><b>${t}</b> ${p} <span class="label nc">${c}</span></li>`).join('');
 })();
 
 /* ------------------------------------------------------------------ 02 · one real ride: every ride of 3 October with GPS,
@@ -2214,8 +2200,22 @@ function sigChart(svg, ex, mode, sgx) {  // one jolt, four processing stages, th
   $('labLead').textContent = `${(total / 1e6).toFixed(0)} MB of sensor files from one ${R.mins}-minute bike ride on a ${R.device}: ${files.length} files, ${fmt(D.funnel[0][1])} readings of motion. Detection runs on this, live, on the phone.`;
   $('fTot').textContent = `${files.length} files · ${(total / 1e6).toFixed(1)} MB`;
   const fh = $('files'), det = $('fDet');
+  // what each file is, in plain words (docs/DATA_FORMAT.md)
+  const FWHAT = { 'accel.csv': 'Every push the phone felt, about 236 a second. This is what finds the bumps.', 'gyro.csv': 'How fast the phone turned. It shows when the phone was picked up or tipped.',
+    'gravity.csv': 'Which way is down, as Android works it out.', 'rotvec.csv': 'Which way the phone faced and tilted, using the compass.', 'game_rotvec.csv': 'Which way the phone faced and tilted, without the compass.',
+    'mag.csv': 'The compass.', 'dynamics.csv': 'Ten times a second: speed, braking, turning and how far the phone leaned.', 'coverage.csv': 'The route second by second, and whether bump detection was on: where the road was checked and nothing was felt.',
+    'location.csv': 'The GPS position, once a second.', 'gnss.csv': 'How good the GPS signal was: how many satellites, how strong.', 'context.csv': 'Once a second: was music or a call on, was the screen on (they can shake the holder). Never the sound itself.',
+    'jolts.csv': 'Every jolt worth a closer look.', 'detections.csv': 'The jolts that became reports: pothole, speed breaker or type unsure.', 'log.csv': 'What happened during the ride: started, GPS lost or back, phone handled, stopped.',
+    'device_check.json': 'The phone check: which sensors this phone has and how well they work.', 'meta.json': 'The ride\'s ID card: phone model, vehicle, sensors, app version.',
+    'subthreshold.csv': 'A small random sample of jolts that were not reported, kept to study missed bumps.', 'battery.csv': 'The battery level during the ride.', 'state.json': 'A running summary (time, distance, reports), so a crash never loses the ride.' };
+  const fsize = s => s >= 1e6 ? (s / 1e6).toFixed(1) + ' MB' : s >= 1e3 ? (s / 1e3).toFixed(0) + ' kB' : s + ' B', fbytes = re => files.filter(f => re.test(f[0])).reduce((a, f) => a + f[1], 0), frows = n => (files.find(f => f[0] === n) || [])[2];
+  $('fKey').innerHTML = `<p><b>Motion</b> (accel, gyro, gravity, rotvec, mag, dynamics): how the phone moved. Almost all of the ${(total / 1e6).toFixed(1)} MB is here.</p>`
+    + `<p><b>Where</b> (location, gnss, coverage): the route, and where the app was checking the road.</p>`
+    + `<p><b>What it found</b> (jolts, detections): ${fmt(frows('jolts.csv'))} jolts worth a look, ${fmt(frows('detections.csv'))} reports. Just ${fsize(fbytes(/^(jolts|detections)\.csv$/))}.</p>`
+    + `<p><b>Housekeeping</b> (meta, device_check, state, log, context, battery): the ride's ID card and a few checks.</p>`
+    + `<p class="fk-end">No camera, no microphone recording and no contacts: only motion, GPS and these checks.</p>`;
   const showF = i => { const [n, s, rows] = files[i]; [...fh.children].forEach((b, j) => b.classList.toggle('on', j === i));
-    det.innerHTML = `<div><span class="label">File</span><b>${n}</b></div><div><span class="label">Size</span><b>${s >= 1e6 ? (s / 1e6).toFixed(2) + ' MB' : s >= 1e3 ? (s / 1e3).toFixed(1) + ' kB' : s + ' B'}</b></div><div><span class="label">${rows ? 'Rows · per second' : 'Rows'}</span><b>${rows ? `${fmt(rows)} · ${(rows / (R.mins * 60)).toFixed(rows / (R.mins * 60) >= 10 ? 0 : 2)}` : 'one document'}</b></div>`; };
+    det.innerHTML = `<div><span class="label">File</span><b>${n}</b></div><div><span class="label">Size</span><b>${s >= 1e6 ? (s / 1e6).toFixed(2) + ' MB' : s >= 1e3 ? (s / 1e3).toFixed(1) + ' kB' : s + ' B'}</b></div><div><span class="label">${rows ? 'Rows · per second' : 'Rows'}</span><b>${rows ? `${fmt(rows)} · ${(rows / (R.mins * 60)).toFixed(rows / (R.mins * 60) >= 10 ? 0 : 2)}` : 'one document'}</b></div>${FWHAT[n] ? `<div class="fw"><span class="label">What it is</span><span>${FWHAT[n]}</span></div>` : ''}`; };
   files.forEach(([n, s, rows], i) => { const b = H('button', { type: 'button', class: 'file' + (s > 1e6 ? ' big' : '') },
     `<span class="fn">${n}</span><span class="fb"><i style="width:${Math.max(.6, 100 * s / max).toFixed(2)}%"></i></span><span class="fs">${s >= 1e6 ? (s / 1e6).toFixed(1) + ' MB' : s >= 1e3 ? (s / 1e3).toFixed(0) + ' kB' : s + ' B'}${rows ? `<span class="rw"> · ${fmt(rows)}</span>` : ''}</span>`); b.onclick = () => showF(i); fh.appendChild(b); });
   showF(1);
