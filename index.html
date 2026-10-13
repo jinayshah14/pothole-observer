@@ -330,7 +330,7 @@ input[type=range]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 
 .sgfig .sg-h { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
 .sgfig svg { width: 100%; }
 .ly { transition: opacity .5s var(--ease); }
-.tk50 { transform-box: fill-box; transform-origin: bottom; transition: transform .5s var(--ease), opacity .4s; }
+.tk50 { transform-box: fill-box; transform-origin: center; transition: transform .5s var(--ease), opacity .4s; }
 .ln-draw { transition: stroke-dashoffset 1.3s cubic-bezier(.4, 0, .2, 1); }
 /* funnel */
 .fun { margin-top: clamp(40px, 5vw, 64px); }
@@ -887,13 +887,13 @@ td.n, th.n { text-align: right; font-family: var(--mono); font-variant-numeric: 
         <div class="chips"><span class="chip">Android 8 or newer</span><span class="chip">Runs on the phone</span><span class="chip">No extra hardware</span></div>
       </header>
       <div class="scr" id="scrA">
-        <div class="scr-g" id="sgG"><figure class="sgfig"><div class="sg-h"><span class="label nc" id="sgLab"></span><span class="label">Real pothole · 19:06 ride</span></div><svg id="sgSvg" role="img" aria-label="The real vertical acceleration of the 19:06 pothole, step by step: raw, gravity removed, trigger line, 2.5-second window, 50 numbers"></svg></figure></div>
+        <div class="scr-g" id="sgG"><figure class="sgfig"><div class="sg-h"><span class="label nc" id="sgLab"></span><span class="label">Real pothole · 19:06 ride</span></div><svg id="sgSvg" role="img" aria-label="The real vertical acceleration of the 19:06 pothole, step by step: raw, gravity removed, trigger line, 2.5-second window, then the jolt measured 50 ways"></svg></figure></div>
         <ol class="scr-steps" id="sgSteps">
           <li class="scr-step"><p>Your phone feels every push, <b>up to 200 times a second</b>. The app checks <b>50 a second</b> for bumps.</p></li>
           <li class="scr-step"><p>Gravity comes out. Only the <b>up-and-down shake</b> stays.</p></li>
           <li class="scr-step"><p>Usual shaking sets a <b>trigger line</b>. Handling the phone pauses it.</p></li>
           <li class="scr-step"><p>The pothole crosses it. <b>2.5 seconds</b> around it are kept.</p></li>
-          <li class="scr-step"><p>That jolt becomes <b>50 numbers</b>. Three of them:</p></li>
+          <li class="scr-step"><p>The app measures that jolt in <b>50 ways</b>. Here are three:</p></li>
         </ol>
       </div>
       <div class="fun">
@@ -1552,11 +1552,11 @@ const SCENE = ex => [null, `The wheel ${ex.label === 'pothole' ? 'drops into the
    the real 19:06 pothole (raw → gravity removed → trigger → 2.5 s window → 50 numbers), then the ride's funnel */
 (function signalScroller() {
   const svg = $('sgSvg'), ex = EX[0], sg = SG.ex[0], fa = ex.feat_all, gBox = $('sgG');
-  const LAB = ['Raw · x, y, z · m/s²', 'Up-and-down only · m/s²', 'Sharp part vs trigger line · m/s²', 'The window: 2.5 s', 'The jolt, as 50 numbers'];
+  const LAB = ['Raw · x, y, z · m/s²', 'Up-and-down only · m/s²', 'Sharp part vs trigger line · m/s²', 'The window: 2.5 s', 'The jolt, measured 50 ways'];
   const VIS = [[0], [1], [2], [2, 3], [4]];
   let layers = [], st = 0, raw = [], ticks = [], axis = null;
   function build() {
-    const W = Math.round(clamp(svg.parentElement.clientWidth || 600, 290, 820)), n = W < 520, Hh = n ? 250 : 320, Lm = 34, Rm = n ? 10 : 16, Tm = 22, Bm = 24;
+    const W = Math.round(clamp(svg.parentElement.clientWidth || 600, 290, 820)), n = W < 520, Hh = n ? 300 : 320, Lm = 34, Rm = n ? 10 : 16, Tm = 22, Bm = 24;
     setVB(svg, W, Hh); svg.innerHTML = '';
     const X = t => Lm + (t + 3) / 7 * (W - Lm - Rm), Yr = (lo, hi) => v => Tm + (hi - v) / (hi - lo) * (Hh - Tm - Bm);
     const path = (f, Y) => ex.t.map((t, i) => (i ? 'L' : 'M') + X(t).toFixed(1) + ' ' + Y(f(i)).toFixed(1)).join('');
@@ -1591,19 +1591,28 @@ const SCENE = ex => [null, `The wheel ${ex.label === 'pothole' ? 'drops into the
       S('path', { d: `M${x0} ${Tm + 8}V${Tm - 2}H${x1}V${Tm + 8}`, style: 'fill:none;stroke:var(--signal)', 'stroke-width': 2 }, g3);
       S('text', { x: (x0 + x1) / 2, y: Tm - 7, 'text-anchor': 'middle', style: 'font:600 11.5px var(--mono);fill:var(--signal-ink)' }, g3, '2.5 s kept'); }
     // 4 · the window becomes 50 numbers: three of them labelled with this jolt's real values
-    { const FK = Object.keys(fa), N = FK.length, g = layers[4], x0 = Lm + 4, x1 = W - Rm - 4, base = Hh - Bm - 4, top = Tm + (n ? 92 : 104), pitch = (x1 - x0) / N;
-      // one bar per measurement, in the model's own order (Features.kt, f3); the three labelled bars are where those
-      // measurements really sit in that list, and every bar carries its name and this jolt's value
-      const pick = [['speed_mps', `${ex.speed} km/h`], ['z_min', `${sgn(fa.z_min)} m/s² dip`], ['peak_to_bg', `${fa.peak_to_bg.toFixed(1)} × ${n ? 'shaking before' : 'the shaking before'}`]].map(([k, t]) => [FK.indexOf(k), t]);
+    // 4 · the jolt, measured 50 ways: one square per measurement (10 × 5, in the model's own order, Features.kt f3);
+    // three of them are numbered where they really sit in that list and explained in everyday words
+    { const FK = Object.keys(fa), N = FK.length, g = layers[4], cols = 10, rows = Math.ceil(N / cols), L4 = n ? 6 : Lm;
+      const gravX = (Math.abs(fa.z_min) / 9.81).toFixed(1);
+      const pick = [['speed_mps', `${ex.speed} km/h`, 'how fast the bike was going', 'how fast the bike was going'],
+        ['z_min', `${sgn(fa.z_min)} m/s²`, `how hard the phone dropped: ${gravX}× the pull of gravity`, `how hard the phone dropped (${gravX}× gravity)`],
+        ['peak_to_bg', `${fa.peak_to_bg.toFixed(1)}×`, 'how much stronger than the shaking just before', 'stronger than the shaking just before']].map(([k, v, t, tn]) => ({ i: FK.indexOf(k), v, t: n ? tn : t }));
+      const cell = Math.floor(n ? 18 : Math.min(30, (W - Lm - Rm) * .4 / cols)), gap = Math.max(3, Math.round(cell * .2)), sz = cell - gap, gy = Tm + 6;
+      const tip = (k, v) => k === 'speed_drop_before' && v < 0 ? `sped up before: ${fmtF(k, -v)}` : `${fname(k)}: ${fmtF(k, v)}`;
       ticks = [];
-      for (let i = 0; i < N; i++) { const hot = pick.find(p => p[0] === i), x = x0 + pitch * (i + .2);
-        const r = S('rect', { x, y: top, width: pitch * .6, height: base - top, class: 'tk50', style: `fill:${hot ? 'var(--signal)' : 'var(--ink-3)'};transition-delay:${RM ? 0 : i * 12}ms`, opacity: hot ? 1 : .55 }, g);
-        S('title', {}, r, `${i + 1} of ${N} · ${fname(FK[i])}: ${fmtF(FK[i], fa[FK[i]])}`); ticks.push(r); }
-      pick.forEach(([i, t], k) => { const x = x0 + pitch * (i + .5), y = Tm + 14 + k * (n ? 26 : 30);
-        S('line', { x1: x, x2: x, y1: y + 6, y2: top - 2, style: 'stroke:var(--signal)', 'stroke-dasharray': '2 3' }, g);
-        const el = S('text', { x: x - 6, y, 'text-anchor': 'start', style: 'font:600 12.5px var(--mono);fill:var(--ink)' }, g, t);
-        const len = el.getComputedTextLength(); if (x - 6 + len > W - Rm) el.setAttribute('x', (W - Rm - len).toFixed(1)); });
-      S('text', { x: x0, y: Hh - 6, style: 'font:500 10.5px var(--mono);fill:var(--ink-3)' }, g, `each bar is one of the ${N}, in the model's order${n ? '' : ' · hover a bar for its value'}`); }
+      for (let i = 0; i < N; i++) { const x = L4 + (i % cols) * cell, y = gy + Math.floor(i / cols) * cell, k = pick.findIndex(p => p.i === i), dl = `transition-delay:${RM ? 0 : i * 10}ms`;
+        const el = S('rect', { x, y, width: sz, height: sz, rx: 2, class: 'tk50', style: `fill:${k >= 0 ? 'var(--signal)' : 'var(--ink-3)'};${dl}`, opacity: k >= 0 ? 1 : .42 }, g);
+        S('title', {}, el, `${i + 1} of ${N} · ${tip(FK[i], fa[FK[i]])}`); ticks.push(el);
+        if (k >= 0) ticks.push(S('text', { x: x + sz / 2, y: y + sz / 2, 'text-anchor': 'middle', 'dominant-baseline': 'central', class: 'tk50', style: `font:800 ${Math.round(sz * .62)}px var(--font);fill:var(--on-signal);stroke:none;pointer-events:none;${dl}` }, g, String(k + 1))); }
+      // the three, in plain words: beside the grid on wide screens, under it on phones
+      const cx0 = n ? L4 : L4 + cols * cell + 30, cy0 = n ? gy + rows * cell + 14 : gy + 4, rowH = n ? 46 : 60, bs = n ? 16 : 20;
+      pick.forEach((p, k) => { const y = cy0 + k * rowH, tx = cx0 + bs + (n ? 9 : 12);
+        S('rect', { x: cx0, y, width: bs, height: bs, rx: 2, style: 'fill:var(--signal)' }, g);
+        S('text', { x: cx0 + bs / 2, y: y + bs / 2, 'text-anchor': 'middle', 'dominant-baseline': 'central', style: `font:800 ${n ? 11 : 13}px var(--font);fill:var(--on-signal);stroke:none` }, g, String(k + 1));
+        S('text', { x: tx, y: y + bs * .78, style: `font:700 ${n ? 17 : 22}px var(--font);fill:var(--ink)` }, g, p.v);
+        S('text', { x: tx, y: y + bs * .78 + (n ? 18 : 22), style: `font:500 ${n ? 12.5 : 14}px var(--font);fill:var(--ink-2)` }, g, p.t); });
+      S('text', { x: L4, y: Hh - 6, style: `font:500 ${n ? 11 : 12}px var(--font);fill:var(--ink-3)` }, g, n ? 'One square = one measurement. The AI reads all 50.' : 'Each square is one measurement. The AI reads all 50 together to decide what the bump was. Hover a square to see it.'); }
     gBox.style.setProperty('--gh', (svg.getBoundingClientRect().height + 40) + 'px');
     setState(st, true);
   }
@@ -1611,7 +1620,7 @@ const SCENE = ex => [null, `The wheel ${ex.label === 'pothole' ? 'drops into the
     st = s; layers.forEach((g, k) => { g.style.opacity = VIS[s].includes(k) ? 1 : 0; }); if (axis) axis.style.opacity = s === 4 ? 0 : 1;
     $('sgLab').textContent = LAB[s];
     if (!RM && s === 0 && !quiet && seen) drawRaw();
-    ticks.forEach(t => { t.style.transform = s === 4 || RM ? 'scaleY(1)' : 'scaleY(0)'; });
+    ticks.forEach(t => { t.style.transform = s === 4 || RM ? 'scale(1)' : 'scale(0)'; });
     if (quiet) return;
   }
   let seen = false;
