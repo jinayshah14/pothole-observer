@@ -886,7 +886,7 @@ td.n, th.n { text-align: right; font-family: var(--mono); font-variant-numeric: 
       <div class="scr" id="scrA">
         <div class="scr-g" id="sgG"><figure class="sgfig"><div class="sg-h"><span class="label" id="sgLab"></span><span class="label">Real pothole · 19:06 ride</span></div><svg id="sgSvg" role="img" aria-label="The real vertical acceleration of the 19:06 pothole, step by step: raw, gravity removed, trigger line, 2.5-second window, 50 numbers"></svg></figure></div>
         <ol class="scr-steps" id="sgSteps">
-          <li class="scr-step"><p>Your phone feels every push, <b>200 times a second</b>. The app checks <b>50 a second</b> for bumps.</p></li>
+          <li class="scr-step"><p>Your phone feels every push, <b>up to 200 times a second</b>. The app checks <b>50 a second</b> for bumps.</p></li>
           <li class="scr-step"><p>Gravity comes out. Only the <b>up-and-down shake</b> stays.</p></li>
           <li class="scr-step"><p>Usual shaking sets a <b>trigger line</b>. Handling the phone pauses it.</p></li>
           <li class="scr-step"><p>The pothole crosses it. <b>2.5 seconds</b> around it are kept.</p></li>
@@ -1584,15 +1584,19 @@ const SCENE = ex => [null, `The wheel ${ex.label === 'pothole' ? 'drops into the
       S('path', { d: `M${x0} ${Tm + 8}V${Tm - 2}H${x1}V${Tm + 8}`, style: 'fill:none;stroke:var(--signal)', 'stroke-width': 2 }, g3);
       S('text', { x: (x0 + x1) / 2, y: Tm - 7, 'text-anchor': 'middle', style: 'font:600 11.5px var(--mono);fill:var(--signal-ink)' }, g3, '2.5 s kept'); }
     // 4 · the window becomes 50 numbers: three of them labelled with this jolt's real values
-    { const g = layers[4], x0 = Lm + 4, x1 = W - Rm - 4, base = Hh - Bm - 4, top = Tm + (n ? 92 : 104), pitch = (x1 - x0) / 50;
-      const pick = [[6, `${sgn(fa.z_min)} m/s² dip`], [24, `${fa.peak_to_bg.toFixed(1)} × the shaking before`], [42, `${ex.speed} km/h`]];
+    { const FK = Object.keys(fa), N = FK.length, g = layers[4], x0 = Lm + 4, x1 = W - Rm - 4, base = Hh - Bm - 4, top = Tm + (n ? 92 : 104), pitch = (x1 - x0) / N;
+      // one bar per measurement, in the model's own order (Features.kt, f3); the three labelled bars are where those
+      // measurements really sit in that list, and every bar carries its name and this jolt's value
+      const pick = [['speed_mps', `${ex.speed} km/h`], ['z_min', `${sgn(fa.z_min)} m/s² dip`], ['peak_to_bg', `${fa.peak_to_bg.toFixed(1)} × ${n ? 'shaking before' : 'the shaking before'}`]].map(([k, t]) => [FK.indexOf(k), t]);
       ticks = [];
-      for (let i = 0; i < 50; i++) { const hot = pick.find(p => p[0] === i), x = x0 + pitch * (i + .2);
-        ticks.push(S('rect', { x, y: top, width: pitch * .6, height: base - top, class: 'tk50', style: `fill:${hot ? 'var(--signal)' : 'var(--ink-3)'};transition-delay:${RM ? 0 : i * 12}ms`, opacity: hot ? 1 : .55 }, g)); }
-      pick.forEach(([i, t], k) => { const x = x0 + pitch * (i + .5), y = Tm + 14 + k * (n ? 26 : 30), anchor = k === 2 ? 'end' : 'start';
+      for (let i = 0; i < N; i++) { const hot = pick.find(p => p[0] === i), x = x0 + pitch * (i + .2);
+        const r = S('rect', { x, y: top, width: pitch * .6, height: base - top, class: 'tk50', style: `fill:${hot ? 'var(--signal)' : 'var(--ink-3)'};transition-delay:${RM ? 0 : i * 12}ms`, opacity: hot ? 1 : .55 }, g);
+        S('title', {}, r, `${i + 1} of ${N} · ${fname(FK[i])}: ${fmtF(FK[i], fa[FK[i]])}`); ticks.push(r); }
+      pick.forEach(([i, t], k) => { const x = x0 + pitch * (i + .5), y = Tm + 14 + k * (n ? 26 : 30);
         S('line', { x1: x, x2: x, y1: y + 6, y2: top - 2, style: 'stroke:var(--signal)', 'stroke-dasharray': '2 3' }, g);
-        S('text', { x: anchor === 'end' ? x + 6 : x - 6, y, 'text-anchor': anchor, style: 'font:600 12.5px var(--mono);fill:var(--ink)' }, g, t); });
-      S('text', { x: Lm, y: Hh - 6, style: 'font:500 10.5px var(--mono);fill:var(--ink-3)' }, g, ''); }
+        const el = S('text', { x: x - 6, y, 'text-anchor': 'start', style: 'font:600 12.5px var(--mono);fill:var(--ink)' }, g, t);
+        const len = el.getComputedTextLength(); if (x - 6 + len > W - Rm) el.setAttribute('x', (W - Rm - len).toFixed(1)); });
+      S('text', { x: x0, y: Hh - 6, style: 'font:500 10.5px var(--mono);fill:var(--ink-3)' }, g, `each bar is one of the ${N}, in the model's order${n ? '' : ' · hover a bar for its value'}`); }
     gBox.style.setProperty('--gh', (svg.getBoundingClientRect().height + 40) + 'px');
     setState(st, true);
   }
@@ -1611,7 +1615,7 @@ const SCENE = ex => [null, `The wheel ${ex.label === 'pothole' ? 'drops into the
   onResizeW(build);
   // the funnel: 514,747 readings → 137 jolts → 37 reports → 34 on the map (log-length bars, labels on the bars)
   const R = D.raw, F = D.funnel, lv = F.map(f => Math.log10(f[1])), mx = Math.max(...lv), mn = Math.min(...lv);
-  const notes = [`${R.mins} minutes, ${R.files.length} files`, `1 in ${fmt(Math.round(F[0][1] / F[1][1]))} readings`, `${pct(F[2][1] / F[1][1])} of the jolts`, `${pct(F[3][1] / F[2][1])} of the reports`];
+  const notes = [`accelerometer + gyroscope · ${R.mins} minutes`, `1 in ${fmt(Math.round(F[0][1] / F[1][1]))} readings`, `${pct(F[2][1] / F[1][1])} of the jolts`, `${pct(F[3][1] / F[2][1])} of the reports · ${F[2][1] - F[3][1]} fell in the private first or last 200 m`];
   $('funnel').innerHTML = F.map(([n, v], i) => `<div class="fstep"><div class="fbar" data-w="${(24 + 76 * (lv[i] - mn) / (mx - mn)).toFixed(1)}" style="width:${(24 + 76 * (lv[i] - mn) / (mx - mn)).toFixed(1)}%"><b>${fmt(v)}</b></div><span>${n}<em>${notes[i]}</em></span></div>`).join('');
   if (!RM) onView($('funnel'), () => { const bars = [...document.querySelectorAll('#funnel .fbar')]; bars.forEach(b => { b.style.transition = 'none'; b.style.width = '128px'; });
     requestAnimationFrame(() => requestAnimationFrame(() => bars.forEach((b, i) => { b.style.transition = `width 1.2s cubic-bezier(.2,.8,.2,1) ${i * 200}ms`; b.style.width = b.dataset.w + '%'; }))); }, .4);
