@@ -599,7 +599,8 @@ td.n, th.n { text-align: right; font-family: var(--mono); font-variant-numeric: 
 .contrib a { grid-column: 1 / -1; font: 500 12px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--signal-ink); text-decoration: none; }
 .contrib a:hover { text-decoration: underline; }
 @media (max-width: 900px) { .m-c { grid-template-columns: minmax(0, 1fr); } }
-.q .xn { display: none; font: 500 11px var(--mono); color: var(--ink-3); padding: 4px 0 0 23px; }
+.q .xn, .qpath .xn { display: none; font: 500 11px var(--mono); color: var(--ink-3); padding: 4px 0 0 23px; }
+.q .qh { display: block; font-style: normal; font-size: 12px; color: var(--ink-3); margin-top: 1px; }
 @media (max-width: 600px) { .qpath .q:nth-child(n+9) { display: none; } .q .xn, .qpath .xn { display: block; } .q { padding: 4px 0 4px 16px; font-size: 13px; } .typegrid { max-width: 230px; } .vl { gap: 8px; } }
 /* raw data lab (drawer) */
 .lab-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
@@ -1308,6 +1309,49 @@ function fmtF(name, v) {
   return n.replace('-', '−') + ({ ms2: ' m/s²', s: ' s', m: ' m', hz: ' Hz', x: '×', g: ' g', deg: '°' }[u] || '');
 }
 const fname = n => (FN[n] || [n])[0];
+/* one tree's questions in plain words. A tree goes left when measurement <= cut-off. q(t) is worded so that YES =
+   left; flip: true words it "more than the cut-off" (YES = right). v formats the value to match the wording;
+   q returns null when the wording would not fit the cut-off, and the generic question is used instead. */
+const pc = v => (Math.abs(v) < .01 ? (100 * v).toFixed(1) : Math.round(100 * v)) + '%';
+const PLAINQ = {
+  z_min: { q: t => t < 0 ? `Did the phone drop harder than ${fmtF('z_min', -t)}?` : null, v: x => x < 0 ? `${fmtF('z_min', -x)} down` : fmtF('z_min', x) },
+  z_max: { q: t => `Did the phone jump up more than ${fmtF('z_max', t)}?`, flip: true },
+  z_p2p: { q: t => `Was the jolt bigger than ${fmtF('z_p2p', t)}, top to bottom?`, flip: true },
+  z_absmax_per_speed: { q: t => `Was it a big jolt for the speed? (over ${fmtF('z_absmax_per_speed', t)})`, flip: true, hint: 'jolt ÷ speed' },
+  z_rms: { q: t => `Was the up-down shaking strong? (over ${fmtF('z_rms', t)})`, flip: true },
+  z_kurtosis: { q: t => `Was it one sharp spike? (peakiness over ${fmtF('z_kurtosis', t)})`, flip: true, hint: 'a spike, not a rumble' },
+  z_npeaks: { q: t => `Were there more than ${Math.floor(t)} peaks?`, flip: true, v: x => x.toFixed(0) },
+  z_peak_spacing_s: { q: t => `Were the peaks more than ${fmtF('z_peak_spacing_s', t)} apart?`, flip: true },
+  z_peak_spacing_m: { q: t => `Were the hits more than ${fmtF('z_peak_spacing_m', t)} apart?`, flip: true },
+  z_dur_above_half: { q: t => `Did the jolt last longer than ${fmtF('z_dur_above_half', t)}?`, flip: true },
+  z_zero_cross_rate: { q: t => `Did it swing up and down a lot? (over ${t.toFixed(1)})`, flip: true, v: x => x.toFixed(1) },
+  low_p2p: { q: t => `Was there a big slow rise and fall? (over ${fmtF('low_p2p', t)})`, flip: true },
+  low_rms: { q: t => `Was the slow heave strong? (over ${fmtF('low_rms', t)})`, flip: true },
+  high_absmax: { q: t => `Was there a hard, sharp knock? (over ${fmtF('high_absmax', t)})`, flip: true },
+  high_rms: { q: t => `Was the sharp knocking strong? (over ${fmtF('high_rms', t)})`, flip: true },
+  low_high_ratio: { q: t => `Was it a sharp knock, not a slow rise? (slow ÷ sharp under ${fmtF('low_high_ratio', t)})`, hint: 'a speed breaker is a slow rise, a pothole a sharp knock' },
+  bg_rms: { q: t => `Was the road already rough just before? (over ${fmtF('bg_rms', t)})`, flip: true },
+  peak_to_bg: { q: t => `Did it stand out from the road's usual shake? (over ${fmtF('peak_to_bg', t)})`, flip: true },
+  h_absmax: { q: t => `Was there a strong sideways or forward shake? (over ${fmtF('h_absmax', t)})`, flip: true },
+  h_rms: { q: t => `Was the sideways/forward shaking strong? (over ${fmtF('h_rms', t)})`, flip: true },
+  h_over_z: { q: t => `More sideways than up-down? (ratio over ${fmtF('h_over_z', t)})`, flip: true },
+  spec_0_2hz: { q: t => `Was over ${pc(t)} of the shake slow swaying (0–2 a second)?`, flip: true, v: pc },
+  spec_2_5hz: { q: t => `Was over ${pc(t)} of the shake a slow bounce (2–5 a second)?`, flip: true, v: pc },
+  spec_5_10hz: { q: t => `Was over ${pc(t)} of the shake medium-fast (5–10 a second)?`, flip: true, v: pc },
+  spec_10_25hz: { q: t => `Was over ${pc(t)} of the shake fast buzzing (10–25 a second)?`, flip: true, v: pc },
+  spec_centroid_hz: { q: t => `Was the shaking slow? (under ${t.toFixed(1)} times a second)`, v: x => `${x.toFixed(1)} a second` },
+  tilt_rate_max: { q: t => `Did the phone tilt faster than ${fmtF('tilt_rate_max', t)}?`, flip: true },
+  tilt_rate_rms: { q: t => `Did the phone keep tilting? (average over ${fmtF('tilt_rate_rms', t)})`, flip: true },
+  yaw_rate_absmean: { q: t => `Was the rider turning? (over ${fmtF('yaw_rate_absmean', t)})`, flip: true },
+  grav_angle_change_deg: { q: t => `Did the phone's angle shift by more than ${fmtF('grav_angle_change_deg', t)}?`, flip: true },
+  a_norm_max_g: { q: t => `Was the total hit under ${fmtF('a_norm_max_g', t)}?`, hint: '1 g = the pull of gravity' },
+  speed_mps: { q: t => `Was the rider going faster than ${fmtF('speed_mps', t)}?`, flip: true },
+  speed_before_5s: { q: t => `Faster than ${fmtF('speed_before_5s', t)} five seconds before?`, flip: true },
+  second_hit_ratio: { q: t => `Was there a second hit almost as strong? (over ${pc(t)} of the first)`, flip: true, hint: 'like the front wheel, then the back wheel', v: pc },
+  low_up_down_ratio: { q: t => `Did it rise about as much as it dropped? (rise ÷ drop over ${fmtF('low_up_down_ratio', t)})`, flip: true },
+};
+const plainQ = (f, t) => { const p = PLAINQ[f], s = p && p.q(t);
+  return s ? { s, flip: !!p.flip, hint: p.hint, v: p.v } : { s: `Is the ${fname(f)} ${fmtF(f, t)} or less?`, flip: false }; };
 const EXN = ['Pothole', 'Speed breaker', 'Below the bar'];
 const sgn = v => (v < 0 ? '−' : '') + Math.abs(v).toFixed(1);
 /* a step scroller: the step whose top has passed the line is the active one (free scrolling, nothing pinned) */
@@ -2081,9 +2125,10 @@ function sigChart(svg, ex, mode, sgx) {  // one jolt, four processing stages, th
     $('mAll50').innerHTML = D.importance.map((r, i) => `<div><em>#${i + 1}</em><span>${fname(r[0])}<small>${r[0]} · ${(100 * r[1]).toFixed(1)}%</small></span><b>${fmtF(r[0], fa[r[0]])}</b></div>`).join('');
     // 3 · one tree: its questions about this jolt
     $('treeTitle').textContent = `Tree ${ex.tree_k + 1} of ${MOD.trees} · ${ex.path.length} questions`;
-    $('qpath').innerHTML = ex.path.map((q, i) => { const bin = BIN[q.f], ans = bin ? !q.left : q.left;
-      const text = bin ? bin : `${fname(q.f)} ≤ ${fmtF(q.f, q.t)}?`;
-      return `<div class="q"><span class="n">Q${i + 1}</span><span>${text}</span><small>${bin ? '' : fmtF(q.f, q.x)}</small><span class="a ${ans ? 'y' : 'n2'}">${ans ? 'yes' : 'no'}</span></div>`; }).join('') + (ex.path.length > 8 ? `<span class="xn">+ ${ex.path.length - 8} more ${ex.path.length - 8 === 1 ? 'question' : 'questions'} on wider screens</span>` : '');
+    $('qpath').innerHTML = ex.path.map((q, i) => { const bin = BIN[q.f], p = bin ? null : plainQ(q.f, q.t);
+      const ans = bin ? !q.left : p.flip ? !q.left : q.left;  // YES/NO answers the question as worded
+      const text = bin ? bin : p.s + (p.hint ? `<em class="qh">${p.hint}</em>` : '');
+      return `<div class="q"><span class="n">Q${i + 1}</span><span>${text}</span><small>${bin ? '' : p.v ? p.v(q.x) : fmtF(q.f, q.x)}</small><span class="a ${ans ? 'y' : 'n2'}">${ans ? 'yes' : 'no'}</span></div>`; }).join('') + (ex.path.length > 8 ? `<span class="xn">+ ${ex.path.length - 8} more ${ex.path.length - 8 === 1 ? 'question' : 'questions'} on wider screens</span>` : '');
     const lk = ORDER.reduce((a, k) => (ex.leaf[k] || 0) > (ex.leaf[a] || 0) ? k : a, ORDER[0]);
     $('leafL').textContent = `This tree's answer: ${CLS[lk].toLowerCase()} ${pct(ex.leaf[lk])}`;
     const lb = $('leafBar'); lb.innerHTML = ''; ORDER.forEach(k => { const v = ex.leaf[k] || 0; if (v > .004) { const i = H('i', { title: `${CLS[k]} ${pct(v)}` }); i.style.width = (100 * v) + '%'; i.style.background = CV[k]; lb.appendChild(i); } });
